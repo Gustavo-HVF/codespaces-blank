@@ -580,6 +580,14 @@
     font-family:inherit; font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
   }
   .laudo-btn:hover{ background:#f2f2f2; }
+
+  /* ================= GLASS PIPETTE (follows the pointer over the slide) ================= */
+  /* drawn as SVG so it can be long, see-through and animated; the system
+     cursor is hidden only where the pipette is shown, and only for a mouse/pen */
+  #pipette{ position:fixed; left:0; top:0; z-index:75; pointer-events:none; display:none; will-change:transform; }
+  #pipette.on{ display:block; }
+  #pipette svg{ display:block; overflow:visible; }
+  body.pipette-on #droplet-clip, body.pipette-on #droplet-clip .organism{ cursor:none; }
 </style>
 </head>
 <body>
@@ -638,6 +646,84 @@
       </div>
     </div>
     <div class="toast mono" id="toast"></div>
+
+    <!-- glass Pasteur pipette that follows the pointer. Drawn upright with the
+         tip at (0,0) and tilted by the rotate(32); the script keeps the tip on
+         the pointer and sets the liquid level and the bulb squeeze. -->
+    <div id="pipette" aria-hidden="true">
+      <svg width="118" height="171" viewBox="-8 -170 128 186">
+        <defs>
+          <!-- glass seen side-on: tinted, refractive edges, nearly clear middle -->
+          <linearGradient id="pp-glass" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#cfe3dd" stop-opacity=".45"/>
+            <stop offset=".2" stop-color="#ffffff" stop-opacity=".14"/>
+            <stop offset=".5" stop-color="#ffffff" stop-opacity=".05"/>
+            <stop offset=".8" stop-color="#ffffff" stop-opacity=".14"/>
+            <stop offset="1" stop-color="#b9d2cb" stop-opacity=".45"/>
+          </linearGradient>
+          <linearGradient id="pp-shine" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+            <stop offset=".15" stop-color="#fff" stop-opacity=".9"/>
+            <stop offset=".85" stop-color="#fff" stop-opacity=".9"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="pp-rubber" cx=".36" cy=".3" r=".85">
+            <stop offset="0" stop-color="#d0604f"/>
+            <stop offset=".45" stop-color="#9a3427"/>
+            <stop offset="1" stop-color="#4a1611"/>
+          </radialGradient>
+          <linearGradient id="pp-neck" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#4f1913"/>
+            <stop offset=".3" stop-color="#a63d2f"/>
+            <stop offset=".6" stop-color="#7a291f"/>
+            <stop offset="1" stop-color="#3d120e"/>
+          </linearGradient>
+          <clipPath id="pp-cavity">
+            <path d="M -0.45 0.2 L -1.15 -64 C -1.15 -71.6 -5.5 -73.8 -5.5 -80 L -5.5 -150 L 5.5 -150 L 5.5 -80 C 5.5 -73.8 1.15 -71.6 1.15 -64 L 0.45 0.2 Z"/>
+          </clipPath>
+          <filter id="pp-blur" filterUnits="userSpaceOnUse" x="-26" y="-200" width="52" height="212">
+            <feGaussianBlur stdDeviation="2.2"/>
+          </filter>
+        </defs>
+        <!-- soft shadow on the slide: glass casts a faint one, the rubber a darker one -->
+        <g transform="translate(7 10) rotate(32)" filter="url(#pp-blur)">
+          <path d="M -1.1 0 Q 0 0.7 1.1 0 L 1.9 -64 C 1.9 -72 6.8 -74 6.8 -80 L 6.8 -150 L -6.8 -150 L -6.8 -80 C -6.8 -74 -1.9 -72 -1.9 -64 Z" fill="#1d2420" opacity=".1"/>
+          <path d="M -8.4 -145.6 L -8.4 -158 C -11 -161 -11.2 -168 -11 -174 C -10.8 -184 -5.4 -190 0 -190 C 5.4 -190 10.8 -184 11 -174 C 11.2 -168 11 -161 8.4 -158 L 8.4 -145.6 Z" fill="#1d2420" opacity=".28"/>
+        </g>
+        <g transform="rotate(32)">
+          <!-- liquid drawn up by suction, seen through the glass -->
+          <g clip-path="url(#pp-cavity)">
+            <rect id="pp-liquid" x="-7" y="0" width="14" height="0" fill="#a9c2b6" fill-opacity=".6"/>
+            <ellipse id="pp-meniscus" cx="0" cy="0" rx="0" ry="0.9" fill="#ffffff" fill-opacity=".5" stroke="#34403c" stroke-opacity=".5" stroke-width=".35" opacity="0"/>
+          </g>
+          <!-- glass tube: capillary, shoulder and body in one outline -->
+          <path d="M -1.1 0 Q 0 0.7 1.1 0 L 1.9 -64 C 1.9 -72 6.8 -74 6.8 -80 L 6.8 -150 L -6.8 -150 L -6.8 -80 C -6.8 -74 -1.9 -72 -1.9 -64 Z"
+                fill="url(#pp-glass)" stroke="#2f3d39" stroke-opacity=".55" stroke-width=".8" stroke-linejoin="round"/>
+          <!-- inner wall: the thickness of the glass shows as a second, fainter line -->
+          <path d="M -0.5 -1.5 L -1.15 -64 C -1.15 -71.6 -5.5 -73.8 -5.5 -80 L -5.5 -146 M 0.5 -1.5 L 1.15 -64 C 1.15 -71.6 5.5 -73.8 5.5 -80 L 5.5 -146"
+                fill="none" stroke="#2f3d39" stroke-opacity=".22" stroke-width=".5"/>
+          <!-- printed graduation marks -->
+          <path d="M 1.6 -92 H 4.6 M 1.6 -98 H 3.4 M 1.6 -104 H 4.6 M 1.6 -110 H 3.4 M 1.6 -116 H 4.6 M 1.6 -122 H 3.4 M 1.6 -128 H 4.6 M 1.6 -134 H 3.4 M 1.6 -140 H 4.6"
+                fill="none" stroke="#24302d" stroke-opacity=".45" stroke-width=".45"/>
+          <!-- specular highlights running along the glass -->
+          <rect x="-4.7" y="-147" width="1.5" height="64" rx=".75" fill="url(#pp-shine)"/>
+          <rect x="3.3" y="-140" width=".8" height="46" rx=".4" fill="url(#pp-shine)" opacity=".4"/>
+          <path d="M -5.2 -79 C -5.2 -74 -2 -72.5 -1.5 -66" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width=".7" stroke-linecap="round"/>
+          <path d="M -0.95 -62 L -0.55 -4" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width=".45" stroke-linecap="round"/>
+          <circle cx="0" cy="-0.8" r=".5" fill="#fff" opacity=".8"/>
+          <!-- rubber bulb: neck sleeved over the glass, then the squeezable bulge -->
+          <path d="M -8.4 -146.5 L -8.4 -159 L 8.4 -159 L 8.4 -146.5 Q 8.4 -145.6 7.6 -145.6 L -7.6 -145.6 Q -8.4 -145.6 -8.4 -146.5 Z" fill="url(#pp-neck)"/>
+          <path d="M -8.4 -150 H 8.4 M -8.4 -153 H 8.4 M -8.4 -156 H 8.4" fill="none" stroke="#2e0c09" stroke-opacity=".45" stroke-width=".6"/>
+          <path d="M -8.4 -149.4 H 8.4 M -8.4 -152.4 H 8.4 M -8.4 -155.4 H 8.4" fill="none" stroke="#e08070" stroke-opacity=".25" stroke-width=".4"/>
+          <g id="pp-bulge">
+            <path d="M -8.4 -158 C -11 -161 -11.2 -168 -11 -174 C -10.8 -184 -5.4 -190 0 -190 C 5.4 -190 10.8 -184 11 -174 C 11.2 -168 11 -161 8.4 -158 Z"
+                  fill="url(#pp-rubber)" stroke="#2e0c09" stroke-opacity=".5" stroke-width=".6"/>
+            <ellipse cx="-4.4" cy="-178" rx="2" ry="6.5" fill="#fff" opacity=".22" transform="rotate(12 -4.4 -178)"/>
+            <circle cx="-5" cy="-184" r=".9" fill="#fff" opacity=".45"/>
+          </g>
+        </g>
+      </svg>
+    </div>
 
     <div id="reel"></div>
 
@@ -4241,6 +4327,77 @@ Organism.DEATH_TIME = 1.8;
     requestAnimationFrame(holdLoop);
   }
   requestAnimationFrame(holdLoop);
+
+  // ---- glass pipette following the pointer over the slide ----
+  // Replaces the system cursor there (mouse/pen only). Pressing squeezes the
+  // rubber bulb; while a specimen is being sucked up the bulb re-expands and
+  // the sample's liquid rises inside the glass with the capture progress,
+  // then drains back out once the specimen is in its vial or escapes.
+  const pipetteEl = document.getElementById('pipette');
+  const ppSvg = pipetteEl.querySelector('svg');
+  const ppLiquid = document.getElementById('pp-liquid');
+  const ppMeniscus = document.getElementById('pp-meniscus');
+  const ppBulge = document.getElementById('pp-bulge');
+  const ppK = parseFloat(ppSvg.getAttribute('width')) / ppSvg.viewBox.baseVal.width; // px per drawing unit
+  const ppTip = { x: -ppSvg.viewBox.baseVal.x*ppK, y: -ppSvg.viewBox.baseVal.y*ppK }; // tip is drawn at (0,0)
+  const PP_LIQUID = { water:['#a9c2b6', 0.6], soil:['#b09f76', 0.6], milk:['#ffffff', 1] };
+  const ppFinePointer = !!(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches);
+  if(ppFinePointer) document.body.classList.add('pipette-on');
+  let ppVisible = false, ppPressed = false, ppLevel = 0, ppSqueeze = 0, ppSlide = null, ppLastT = performance.now();
+
+  function placePipette(e){
+    if(!ppFinePointer || e.pointerType === 'touch') return;
+    pipetteEl.style.transform = `translate3d(${(e.clientX-ppTip.x).toFixed(1)}px,${(e.clientY-ppTip.y).toFixed(1)}px,0)`;
+    if(!ppVisible){ ppVisible = true; pipetteEl.classList.add('on'); }
+  }
+  dropletClip.addEventListener('pointermove', placePipette);
+  dropletClip.addEventListener('pointerenter', placePipette);
+  dropletClip.addEventListener('pointerleave', ()=>{ ppVisible = false; pipetteEl.classList.remove('on'); });
+  // capture phase: organisms stop the pointerdown from bubbling
+  dropletClip.addEventListener('pointerdown', ()=>{ ppPressed = true; }, true);
+  window.addEventListener('pointerup', ()=>{ ppPressed = false; });
+
+  // capture progress (0..1) -> liquid height above the tip: the thin
+  // capillary fills fast, then the shoulder, then the wide body slowly
+  function ppLiquidHeight(p){
+    if(p <= 0.35) return p/0.35*64;
+    if(p <= 0.5) return 64 + (p-0.35)/0.15*16;
+    return 80 + (p-0.5)/0.5*40;
+  }
+  // inner half-width of the glass at height h above the tip (for the meniscus)
+  function ppHalfWidth(h){
+    if(h <= 64) return 0.45 + 0.7*h/64;
+    if(h <= 80){ const t = (h-64)/16; return 1.15 + 4.35*t*t*(3-2*t); }
+    return 5.5;
+  }
+
+  function pipetteLoop(now){
+    const dt = Math.min(0.1, (now - ppLastT)/1000);
+    ppLastT = now;
+    if(ppVisible){
+      if(ppSlide !== currentSlide){
+        ppSlide = currentSlide;
+        const [col, op] = PP_LIQUID[currentSlide] || PP_LIQUID.water;
+        ppLiquid.setAttribute('fill', col); ppLiquid.setAttribute('fill-opacity', op);
+      }
+      const p = holding ? Math.min(1, holdProgress*1000/HOLD_DURATION) : 0;
+      ppLevel += (p - ppLevel) * Math.min(1, dt*(p > ppLevel ? 12 : 4)); // rises with the suction, drains slower
+      const squeezeTarget = ppPressed ? (holding ? 1 - p : 1) : 0;
+      ppSqueeze += (squeezeTarget - ppSqueeze) * Math.min(1, dt*14);
+
+      const h = ppLevel < 0.002 ? 0 : ppLiquidHeight(ppLevel);
+      ppLiquid.setAttribute('y', (-h).toFixed(2));
+      ppLiquid.setAttribute('height', (h > 0 ? h + 1 : 0).toFixed(2));
+      ppMeniscus.setAttribute('cy', (-h).toFixed(2));
+      ppMeniscus.setAttribute('rx', ppHalfWidth(h).toFixed(2));
+      ppMeniscus.setAttribute('opacity', h > 1 ? 1 : 0);
+      // pinched between the fingers: narrower, a touch longer
+      const sx = 1 - 0.32*ppSqueeze, sy = 1 + 0.05*ppSqueeze;
+      ppBulge.setAttribute('transform', `translate(0 -158) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) translate(0 158)`);
+    }
+    requestAnimationFrame(pipetteLoop);
+  }
+  requestAnimationFrame(pipetteLoop);
 
   // color / duration are optional: the milk slide tints the toast with the
   // health verdict and keeps it up longer so it can be read
