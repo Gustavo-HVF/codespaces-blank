@@ -523,6 +523,63 @@
   #intro h1{ color:#111; }
   #intro .lead{ color:#444; font-family:inherit; }
   #intro .lead b{ color:#111; }
+
+  /* ================= MILK / DAIRY MODULE ================= */
+  :root{
+    --health-benefica: #2e7d4f;
+    --health-patogenica: #c0262d;
+    --health-deteriorante: #b36b00;
+  }
+  #slide.milk #glass{ background: linear-gradient(155deg, #f4f1e6 0%, #e9e3d1 45%, #efeadb 70%, #ddd5bf 100%); }
+  #dried-summary{ white-space:pre-line; }
+  #dried-overlay.laudo p{ max-width:520px; text-align:left; color:#222; }
+  /* longer milk messages wrap instead of running off narrow screens */
+  .toast{ width:max-content; max-width:calc(100vw - 32px); white-space:normal; text-align:center; }
+
+  /* left rail: sample sub-headings + health dot revealed on capture */
+  .rail-sub{
+    padding:10px 16px 4px; font-size:.6rem; font-weight:700; letter-spacing:.12em;
+    text-transform:uppercase; color:#6b6b6b;
+  }
+  .shape-entry .hdot{ width:7px; height:7px; border-radius:50%; margin-left:auto; flex:none; display:none; }
+  .shape-entry.discovered .hdot{ display:block; }
+  .hdot.benefica{ background:var(--health-benefica); }
+  .hdot.patogenica{ background:var(--health-patogenica); }
+  .hdot.deteriorante{ background:var(--health-deteriorante); }
+
+  /* specimen vials: health badge on the cap */
+  .reel-slot .health-badge{
+    position:absolute; top:-15px; right:-8px; z-index:2;
+    width:17px; height:17px; border-radius:50%; border:1.5px solid #111;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.62rem; font-weight:700; color:#fff; line-height:1;
+  }
+  .health-badge.benefica{ background:var(--health-benefica); }
+  .health-badge.patogenica{ background:var(--health-patogenica); }
+  .health-badge.deteriorante{ background:var(--health-deteriorante); }
+  #reel{ gap:20px; }
+
+  /* specimen sheet: health verdict */
+  .health-tag{
+    display:inline-block; margin:0 0 8px; padding:3px 9px; border-radius:4px;
+    font-size:.66rem; font-weight:700; letter-spacing:.08em; color:#fff;
+  }
+  .health-tag.benefica{ background:var(--health-benefica); }
+  .health-tag.patogenica{ background:var(--health-patogenica); }
+  .health-tag.deteriorante{ background:var(--health-deteriorante); }
+
+  /* right card: milk analysis (only on the milk slide) */
+  #hud-milk{ display:none; }
+  body.slide-milk #hud-milk{ display:block; }
+  .hud-row.good span:last-child{ color:var(--health-benefica); }
+  .hud-row.bad span:last-child{ color:var(--health-patogenica); }
+  .hud-row.spoil span:last-child{ color:var(--health-deteriorante); }
+  .laudo-btn{
+    width:100%; margin-top:8px; padding:7px 0; cursor:pointer;
+    background:#fff; color:#111; border:1.5px solid #111; border-radius:6px;
+    font-family:inherit; font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .laudo-btn:hover{ background:#f2f2f2; }
 </style>
 </head>
 <body>
@@ -530,10 +587,13 @@
 <div id="intro">
   <h1>Microcosmo</h1>
   <div class="lead mono">
-    Um microscópio virtual. Escolha uma lâmina — água de lagoa ou solo úmido — e explore
-    a amostra com as <b>setas do teclado</b>. Gire a <b>roda do mouse</b> para ajustar o foco:
+    Um microscópio virtual. Escolha uma lâmina — água de lagoa, solo úmido ou
+    <b>leite cru</b> de um lote da indústria de laticínios — e explore a amostra com as
+    <b>setas do teclado</b>. Gire a <b>roda do mouse</b> para ajustar o foco:
     cada plano focal revela organismos diferentes. Para coletar um espécime, segure o clique
-    com a <b>pipeta</b> sobre ele por <b>5 segundos</b>. Clique num recipiente para ver a ficha
+    com a <b>pipeta</b> sobre ele por <b>5 segundos</b>. No leite, cada bactéria coletada é
+    classificada como <b>benéfica</b>, <b>deteriorante</b> ou <b>patogênica</b> para a saúde
+    humana, e o lote recebe um laudo de risco. Clique num recipiente para ver a ficha
     do organismo e abrir a página dele na Wikipedia. A gota evapora com o tempo.
   </div>
   <button id="start-btn" class="mono">Colocar a lâmina</button>
@@ -553,7 +613,7 @@
     <button id="species-toggle" class="species-toggle mono" aria-expanded="false" title="Mostrar espécimes">
       <span class="burger"><i></i><i></i><i></i></span>
       <span class="st-label">Espécimes</span>
-      <span id="species-count" class="st-count">0/22</span>
+      <span id="species-count" class="st-count">0/38</span>
     </button>
     <div id="shape-list" class="collapsed"></div>
   </div>
@@ -582,7 +642,7 @@
     <div id="reel"></div>
 
     <div id="dried-overlay">
-      <h2>A lâmina secou</h2>
+      <h2 id="dried-title">A lâmina secou</h2>
       <p class="mono" id="dried-summary"></p>
       <button id="restart-btn" class="mono">Nova lâmina</button>
     </div>
@@ -603,8 +663,20 @@
         <div class="slide-picker">
           <button class="slide-btn mono active" data-slide="water">Água</button>
           <button class="slide-btn mono" data-slide="soil">Solo</button>
+          <button class="slide-btn mono" data-slide="milk">Leite</button>
         </div>
         <div class="hud-row"><span>amostra</span><span id="hud-slide-name">água de lagoa</span></div>
+      </div>
+    </div>
+    <div class="hud-group open" data-group="milk" id="hud-milk">
+      <div class="hud-group-head"><span class="caret">▶</span>Análise do leite</div>
+      <div class="hud-group-body">
+        <div class="hud-row"><span>lote</span><span id="hud-milk-lot">—</span></div>
+        <div class="hud-row good"><span>benéficas</span><span id="hud-milk-good">0</span></div>
+        <div class="hud-row spoil"><span>deteriorantes</span><span id="hud-milk-spoil">0</span></div>
+        <div class="hud-row bad"><span>patogênicas</span><span id="hud-milk-bad">0</span></div>
+        <div class="hud-row" id="hud-milk-risk-row"><span>risco do lote</span><span id="hud-milk-risk">sem dados</span></div>
+        <button id="laudo-btn" class="laudo-btn">Emitir laudo</button>
       </div>
     </div>
     <div class="hud-group" data-group="zoom">
@@ -641,7 +713,7 @@
     <div class="hud-group open" data-group="drying">
       <div class="hud-group-head"><span class="caret">▶</span>Secagem</div>
       <div class="hud-group-body">
-        <div class="hud-row" id="hud-dry-row"><span>água restante</span><span id="hud-dry-pct">100%</span></div>
+        <div class="hud-row" id="hud-dry-row"><span id="hud-dry-label">água restante</span><span id="hud-dry-pct">100%</span></div>
         <div class="mini-bar dry"><div id="hud-dry-bar" style="width:100%"></div></div>
       </div>
     </div>
@@ -663,7 +735,14 @@
     <div class="panel-body">
       <div class="panel-section"><h4>DESCRIÇÃO</h4><p id="panel-desc"></p></div>
       <div class="panel-section"><h4>COMPORTAMENTO OBSERVADO</h4><p id="panel-behavior"></p></div>
+      <div class="panel-section" id="panel-health-section">
+        <h4>SAÚDE HUMANA</h4>
+        <span class="health-tag" id="panel-health-tag"></span>
+        <p id="panel-health"></p>
+      </div>
+      <div class="panel-section" id="panel-industry-section"><h4>NA INDÚSTRIA DE LATICÍNIOS</h4><p id="panel-industry"></p></div>
       <div class="panel-section">
+        <div class="stat-row" id="panel-gram-row"><span>Coloração de Gram</span><span id="panel-gram"></span></div>
         <div class="stat-row"><span>Plano focal</span><span id="panel-depth"></span></div>
         <div class="stat-row"><span>Forma</span><span id="panel-shape"></span></div>
         <div class="stat-row"><span>Motilidade</span><span id="panel-motility"></span></div>
@@ -677,16 +756,18 @@
 </div>
 
 <script>
-// Banco de espécimes — 22 formas de vida microscópica real, nomeadas exatamente como
-// pedido (displayName), cada uma mapeada ao organismo real correspondente (realName /
-// sciName) para que a descrição e o link para a Wikipedia sejam factualmente corretos.
+// Banco de espécimes — 23 formas de vida microscópica real de água e solo, nomeadas
+// exatamente como pedido (displayName), mais 15 microrganismos do leite (indústria de
+// laticínios). Cada um é mapeado ao organismo real correspondente (realName / sciName)
+// para que a descrição e o link para a Wikipedia sejam factualmente corretos.
 // depth: 1 (superfície / baixo foco) a 4 (fundo / alto foco)
 // rarity: comum, incomum, raro, lendario
 // shape: ver organism.js para a lista de formas implementadas
 // motility: 'cilia' (batimento ciliar), 'flagellate-whip' (chicote de flagelo único),
 //           'flagella-colony' (colônia flagelada sincronizada), 'gliding' (deslize de diatomácea/alga),
 //           'crawl' (rastejo ameboide/tentacular), 'stalked' (presa por um talo, só o corpo se move),
-//           'brownian' (sem locomoção própria)
+//           'flagella-run-tumble' (bactéria: corrida + cambalhota), 'flagella-smooth' (bactéria:
+//           nado contínuo), 'brownian' (sem locomoção própria)
 
 const SPECIES = [
   {
@@ -1013,6 +1094,319 @@ const SPECIES = [
     desc: 'Animal microscópico (0,1–0,5 mm) com corpo segmentado e oito patas curtas terminadas em garras. Vive no filme de água de musgos, liquens, solo e sedimentos. É famoso pela criptobiose: ao secar, recolhe as patas e vira um "barrilzinho" (tun), sobrevivendo à desidratação, ao frio extremo, à radiação e até ao vácuo do espaço — e volta à vida ao ser reidratado.',
     behavior: 'Anda devagar e de forma desajeitada, movendo as oito patas em onda e agarrando-se aos detritos com as garras. Aqui no jogo, quando a gota seca ao redor dele, ele não morre: entra em criptobiose e fica imóvel em forma de barril.'
   },
+
+  // ---------------------------------------------------------------------------
+  // Lâmina de LEITE (indústria de laticínios). Vista em objetiva de imersão
+  // (1000x), por isso bactérias de 1–5 µm aparecem do tamanho dos protozoários
+  // das outras lâminas. Campos extras:
+  //   health: 'benefica' | 'deteriorante' | 'patogenica' — efeito na saúde humana
+  //   gram: resultado da coloração de Gram, o primeiro teste do laboratório
+  //   healthNote / industry: textos da ficha; finding: o que o achado indica no laudo
+  //   chainCells / spores / turns / shapeLabel / turnRate: ajustes de forma e movimento
+  // ---------------------------------------------------------------------------
+  {
+    id: 'acidophilus',
+    displayName: 'acidophilus',
+    commonName: 'Lactobacilo acidófilo',
+    sciName: 'Lactobacillus acidophilus',
+    wikiTitle: 'Lactobacillus_acidophilus',
+    shape: 'bacillus-chain', chainCells: 3,
+    color: '#e4e0d3', colorDark: '#4c4a40',
+    length: 42, width: 6,
+    depth: 1, rarity: 'comum', habitat: ['milk'],
+    motility: 'brownian', speed: 0.12, turnRate: 0.5,
+    health: 'benefica', gram: 'Gram-positiva',
+    desc: 'Bactéria láctica em forma de bastonete que costuma aparecer em pares ou cadeias curtas. Fermenta a lactose do leite em ácido lático e vive naturalmente no intestino humano.',
+    behavior: 'Não tem flagelos: as cadeias de bastonetes só tremulam no lugar, empurradas pelo movimento browniano.',
+    healthNote: 'Probiótico clássico, estudado por ajudar a manter o equilíbrio da microbiota intestinal. O ácido lático que produz deixa o meio ácido, o que dificulta o crescimento de bactérias nocivas.',
+    industry: 'Adicionado a leites fermentados, iogurtes e bebidas lácteas probióticas. Aqui ele não é contaminante — é ingrediente.',
+    finding: 'cultura probiótica (fermento lático)'
+  },
+  {
+    id: 'thermophilus',
+    displayName: 'thermophilus',
+    commonName: 'Estreptococo do iogurte',
+    sciName: 'Streptococcus thermophilus',
+    wikiTitle: 'Streptococcus_thermophilus',
+    shape: 'coccus-chain', chainCells: 6,
+    color: '#e6e2d6', colorDark: '#4a483f',
+    length: 40, width: 8,
+    depth: 1, rarity: 'comum', habitat: ['milk'],
+    motility: 'brownian', speed: 0.1, turnRate: 0.5,
+    health: 'benefica', gram: 'Gram-positiva',
+    desc: 'Coco (célula esférica) que se divide sempre no mesmo plano e forma cadeias, como um colar de contas. Cresce bem em temperaturas altas, por volta de 40–45 °C — daí o nome "thermophilus".',
+    behavior: 'Imóvel: a cadeia apenas ondula devagar, sem nadar.',
+    healthNote: 'Inofensivo e benéfico. As culturas vivas do iogurte produzem a enzima lactase e ajudam pessoas com intolerância à lactose a digerir melhor o leite fermentado.',
+    industry: 'Fermento lático do iogurte (em dupla com o L. bulgaricus) e de queijos como a muçarela e o parmesão. Transforma a lactose em ácido lático, que coagula as proteínas do leite.',
+    finding: 'fermento lático (iogurte e queijos)'
+  },
+  {
+    id: 'lactococcus',
+    displayName: 'lactococcus',
+    commonName: 'Lactococo do queijo',
+    sciName: 'Lactococcus lactis',
+    wikiTitle: 'Lactococcus_lactis',
+    shape: 'coccus-chain', chainCells: 2, shapeLabel: 'Cocos aos pares (diplococos)',
+    color: '#e5e1d4', colorDark: '#4b493f',
+    length: 17, width: 9,
+    depth: 2, rarity: 'comum', habitat: ['milk'],
+    motility: 'brownian', speed: 0.1, turnRate: 0.6,
+    health: 'benefica', gram: 'Gram-positiva',
+    desc: 'Coco levemente ovalado que aparece aos pares ou em cadeias curtas. Uma das bactérias mais importantes da história dos laticínios: foi uma das primeiras bactérias isoladas em cultura pura, pelo cirurgião Joseph Lister, no século XIX.',
+    behavior: 'Imóvel; o par de células apenas vibra no lugar.',
+    healthNote: 'Benéfica e considerada segura para alimentos. Produz nisina, um antimicrobiano natural que inibe bactérias perigosas como a Listeria e os esporos de Clostridium.',
+    industry: 'Principal fermento de queijos (cheddar, gouda, queijo minas), creme azedo e manteiga. A nisina que ele produz é usada como conservante em queijos processados.',
+    finding: 'fermento lático de queijos'
+  },
+  {
+    id: 'bulgaricus',
+    displayName: 'bulgaricus',
+    commonName: 'Lactobacilo búlgaro',
+    sciName: 'Lactobacillus delbrueckii subsp. bulgaricus',
+    wikiTitle: 'Lactobacillus_delbrueckii_subsp._bulgaricus',
+    shape: 'bacillus-chain', chainCells: 2,
+    color: '#e4e0d3', colorDark: '#4c4a40',
+    length: 46, width: 6,
+    depth: 3, rarity: 'incomum', habitat: ['milk'],
+    motility: 'brownian', speed: 0.1, turnRate: 0.5,
+    health: 'benefica', gram: 'Gram-positiva',
+    desc: 'Bastonete longo, isolado ou em cadeias curtas, descrito pelo médico búlgaro Stamen Grigorov em 1905 no iogurte de seu país. Trabalha em parceria com o S. thermophilus: um estimula o crescimento do outro (protocooperação).',
+    behavior: 'Imóvel; os bastonetes longos apenas balançam lentamente.',
+    healthNote: 'Benéfico. O cientista Élie Metchnikoff (Nobel de 1908) associou o consumo de leites fermentados com essa bactéria à longevidade dos camponeses búlgaros — a origem da ideia de probiótico.',
+    industry: 'Fermento obrigatório do iogurte: produz ácido lático e o acetaldeído, responsável pelo aroma típico do iogurte.',
+    finding: 'fermento lático do iogurte'
+  },
+  {
+    id: 'bifidus',
+    displayName: 'bifidus',
+    commonName: 'Bifidobactéria',
+    sciName: 'Bifidobacterium animalis subsp. lactis',
+    wikiTitle: 'Bifidobacterium_animalis',
+    shape: 'bifid-rod',
+    color: '#e5e1d5', colorDark: '#4a483e',
+    length: 26, width: 5,
+    depth: 3, rarity: 'raro', habitat: ['milk'],
+    motility: 'brownian', speed: 0.08, turnRate: 0.6,
+    health: 'benefica', gram: 'Gram-positiva',
+    desc: 'Bastonete irregular que se ramifica em forma de "Y" — o nome vem do latim bifidus, "dividido em dois". O gênero é anaeróbio: o oxigênio o prejudica.',
+    behavior: 'Imóvel, sem flagelos; apenas vibra no lugar.',
+    healthNote: 'Probiótico. Bifidobactérias estão entre as primeiras bactérias a colonizar o intestino de bebês amamentados e ajudam a regular o trânsito intestinal e a competir com microrganismos nocivos.',
+    industry: 'É o "bifidus" dos rótulos de iogurtes e leites fermentados. Esta subespécie é a preferida da indústria por tolerar melhor o oxigênio e a acidez, sobrevivendo até o fim da validade do produto.',
+    finding: 'cultura probiótica'
+  },
+  {
+    id: 'kefir',
+    displayName: 'kefir',
+    commonName: 'Levedura do kefir',
+    sciName: 'Kluyveromyces marxianus',
+    wikiTitle: 'Kluyveromyces_marxianus',
+    shape: 'budding-yeast',
+    color: '#e8e4d8', colorDark: '#4d4b41',
+    length: 32, width: 22,
+    depth: 4, rarity: 'incomum', habitat: ['milk'],
+    motility: 'brownian', speed: 0.06, turnRate: 0.4,
+    health: 'benefica', gram: 'Não se aplica (é um fungo)',
+    desc: 'Não é bactéria: é um fungo unicelular (levedura), bem maior que as bactérias ao redor. Reproduz-se por brotamento — uma célula-filha cresce como um "broto" na ponta da célula-mãe. É uma das poucas leveduras capazes de fermentar a lactose.',
+    behavior: 'Imóvel; observe o broto aumentando aos poucos até se soltar da célula-mãe.',
+    healthNote: 'Benéfica: vive nos grãos de kefir junto com bactérias lácticas, numa simbiose que produz uma bebida fermentada levemente gaseificada, estudada por seu potencial probiótico.',
+    industry: 'Fermenta o kefir e é usada para aproveitar o soro de leite — um resíduo dos laticínios — transformando sua lactose em etanol e biomassa. Leveduras desse gênero também são fonte da lactase usada no leite sem lactose.',
+    finding: 'levedura fermentadora (kefir)'
+  },
+  {
+    id: 'ecoli',
+    displayName: 'e. coli',
+    commonName: 'Escherichia coli (coliforme)',
+    sciName: 'Escherichia coli',
+    wikiTitle: 'Escherichia_coli',
+    shape: 'bacillus', flagella: 'peritrichous',
+    color: '#e3dfd3', colorDark: '#47453c',
+    length: 18, width: 7,
+    depth: 1, rarity: 'comum', habitat: ['milk'],
+    motility: 'flagella-run-tumble', speed: 1.5,
+    health: 'patogenica', gram: 'Gram-negativa',
+    desc: 'Bastonete curto com vários flagelos espalhados pelo corpo. Vive no intestino de pessoas e animais, por isso sua presença no leite indica contaminação fecal — é o indicador clássico de higiene na indústria de alimentos.',
+    behavior: 'Nada em "corridas" retas, com os flagelos enrolados num feixe, e de repente dá uma "cambalhota" (tumble) e sai numa direção nova, ao acaso.',
+    healthNote: 'A maioria das cepas é inofensiva, mas algumas são perigosas: a E. coli O157:H7 produz a toxina Shiga e pode causar diarreia com sangue e síndrome hemolítico-urêmica, que lesa os rins — sobretudo em crianças.',
+    industry: 'Faz parte dos coliformes, grupo contado nas análises de rotina do leite e derivados. É destruída pela pasteurização; encontrá-la num produto pasteurizado significa falha no processo ou recontaminação.',
+    finding: 'contaminação fecal — falha de higiene na ordenha, nos equipamentos ou na água'
+  },
+  {
+    id: 'aureus',
+    displayName: 's. aureus',
+    commonName: 'Estafilococo dourado',
+    sciName: 'Staphylococcus aureus',
+    wikiTitle: 'Staphylococcus_aureus',
+    shape: 'coccus-cluster',
+    color: '#e6e2d5', colorDark: '#4a483e',
+    length: 30, width: 8,
+    depth: 2, rarity: 'comum', habitat: ['milk'],
+    motility: 'brownian', speed: 0.08, turnRate: 0.4,
+    health: 'patogenica', gram: 'Gram-positiva',
+    desc: 'Cocos que se dividem em vários planos e ficam agrupados em cachos, como uvas (staphylé, em grego). É um dos principais causadores de mastite — a inflamação do úbere das vacas — e também vive na pele e no nariz das pessoas.',
+    behavior: 'Imóvel: o cacho apenas treme no lugar com o movimento browniano.',
+    healthNote: 'Produz enterotoxinas que causam intoxicação alimentar, com vômitos e cólicas poucas horas após a ingestão. A pasteurização mata a bactéria, mas a toxina resiste ao calor — por isso o leite precisa ser resfriado logo após a ordenha.',
+    industry: 'Indica mastite no rebanho ou manipulação sem higiene. A mastite também eleva a contagem de células somáticas (CCS) — as células grandes de núcleo lobulado no fundo da lâmina.',
+    finding: 'mastite no rebanho ou manipulação sem higiene (a enterotoxina resiste à pasteurização)'
+  },
+  {
+    id: 'salmonella',
+    displayName: 'salmonella',
+    commonName: 'Salmonela',
+    sciName: 'Salmonella enterica',
+    wikiTitle: 'Salmonella_enterica',
+    shape: 'bacillus', flagella: 'peritrichous-dense',
+    color: '#e3dfd3', colorDark: '#47453c',
+    length: 19, width: 7,
+    depth: 2, rarity: 'incomum', habitat: ['milk'],
+    motility: 'flagella-run-tumble', speed: 1.4,
+    health: 'patogenica', gram: 'Gram-negativa',
+    desc: 'Bastonete coberto de flagelos, parente próximo da E. coli. Vive no intestino de animais e chega ao leite por contaminação fecal durante a ordenha.',
+    behavior: 'Nadadora ativa: corre em linha reta e dá cambalhotas para mudar de rumo, como a E. coli.',
+    healthNote: 'Causa salmonelose: febre, diarreia, vômitos e cólicas, de algumas horas a poucos dias após o consumo. Pode ser grave em crianças, idosos e imunossuprimidos. Há surtos documentados ligados a leite cru e queijos de leite cru.',
+    industry: 'Os padrões microbiológicos exigem ausência de Salmonella em leite e derivados. A pasteurização (72–75 °C por 15–20 s) a elimina.',
+    finding: 'contaminação fecal grave — leite impróprio para consumo cru'
+  },
+  {
+    id: 'listeria',
+    displayName: 'listeria',
+    commonName: 'Listéria',
+    sciName: 'Listeria monocytogenes',
+    wikiTitle: 'Listeria_monocytogenes',
+    shape: 'bacillus', flagella: 'peritrichous',
+    color: '#e5e1d4', colorDark: '#47453c',
+    length: 14, width: 6,
+    depth: 3, rarity: 'raro', habitat: ['milk'],
+    motility: 'flagella-run-tumble', speed: 0.9,
+    health: 'patogenica', gram: 'Gram-positiva',
+    desc: 'Bastonete pequeno e muito resistente: cresce até na temperatura de geladeira (é psicrotrófica) e tolera sal e acidez. Vive no solo e na silagem, e forma biofilmes em ralos e equipamentos de laticínios.',
+    behavior: 'Em temperatura ambiente tem flagelos e se move com um "tombamento" característico (tumbling); a 37 °C, dentro do corpo, deixa de produzir os flagelos.',
+    healthNote: 'Causa listeriose, rara mas muito grave: pode provocar meningite e septicemia, e em gestantes causa aborto e infecção do bebê. É uma das doenças transmitidas por alimentos com maior taxa de mortalidade.',
+    industry: 'Grande preocupação em queijos macios e de leite cru. Como cresce no frio, a geladeira não a detém — o controle depende da pasteurização e de higiene rigorosa na fábrica para evitar a recontaminação.',
+    finding: 'contaminação ambiental da fábrica — risco grave para gestantes'
+  },
+  {
+    id: 'campylobacter',
+    displayName: 'c. jejuni',
+    commonName: 'Campilobacter',
+    sciName: 'Campylobacter jejuni',
+    wikiTitle: 'Campylobacter_jejuni',
+    shape: 'spirillum', turns: 1.5, shapeLabel: 'Bastonete curvo em espiral ("asa de gaivota")',
+    color: '#e3dfd3', colorDark: '#47453c',
+    length: 22, width: 6,
+    depth: 3, rarity: 'incomum', habitat: ['milk'],
+    motility: 'flagella-smooth', speed: 1.9,
+    health: 'patogenica', gram: 'Gram-negativa',
+    desc: 'Bastonete curvo em espiral, com um flagelo em cada ponta. Vive no intestino de aves e bovinos sem fazê-los adoecer.',
+    behavior: 'Move-se muito rápido, em saca-rolhas, girando o corpo em espiral e mudando de direção de repente.',
+    healthNote: 'Uma das causas mais comuns de gastroenterite bacteriana no mundo (diarreia, febre, dor abdominal). Raramente desencadeia a síndrome de Guillain-Barré, uma paralisia temporária. O leite cru é uma fonte frequente de surtos.',
+    industry: 'Quase não se multiplica fora do intestino, mas poucas células bastam para infectar uma pessoa. A pasteurização a elimina com facilidade.',
+    finding: 'contaminação fecal do leite cru'
+  },
+  {
+    id: 'bcereus',
+    displayName: 'b. cereus',
+    commonName: 'Bacilo cereus',
+    sciName: 'Bacillus cereus',
+    wikiTitle: 'Bacillus_cereus',
+    shape: 'bacillus-chain', chainCells: 4, spores: true, shapeLabel: 'Bastonetes grandes em cadeia, com esporos',
+    color: '#e4e0d4', colorDark: '#45433a',
+    length: 64, width: 9,
+    depth: 3, rarity: 'incomum', habitat: ['milk'],
+    motility: 'brownian', speed: 0.08, turnRate: 0.35,
+    health: 'patogenica', gram: 'Gram-positiva',
+    desc: 'Bastonete grande que forma cadeias e produz endósporos — as estruturas ovais brilhantes dentro das células, formas de resistência que suportam calor, secura e desinfetantes. Vem do solo, da poeira e da ração.',
+    behavior: 'Em cadeias longas fica praticamente imóvel, só oscilando; células soltas conseguem nadar com flagelos.',
+    healthNote: 'Causa intoxicação alimentar de dois tipos: emética (vômitos, por uma toxina que resiste ao calor) e diarreica. Em geral é leve e passageira.',
+    industry: 'Os esporos sobrevivem à pasteurização e, no leite mal refrigerado, germinam e causam a "coagulação doce" e sabor amargo — por isso também é um deteriorante importante.',
+    finding: 'esporos vindos do solo e da ração — sobrevivem à pasteurização'
+  },
+  {
+    id: 'mbovis',
+    displayName: 'm. bovis',
+    commonName: 'Bacilo da tuberculose bovina',
+    sciName: 'Mycobacterium bovis',
+    wikiTitle: 'Mycobacterium_bovis',
+    shape: 'bacillus', shapeLabel: 'Bastonete fino e longo',
+    color: '#e5e1d5', colorDark: '#47453c',
+    length: 22, width: 4,
+    depth: 4, rarity: 'raro', habitat: ['milk'],
+    motility: 'brownian', speed: 0.05, turnRate: 0.5,
+    health: 'patogenica', gram: 'Álcool-ácido resistente (cora mal pelo Gram; usa-se Ziehl-Neelsen)',
+    desc: 'Bastonete fino, de crescimento muito lento, com uma parede celular rica em ceras (ácidos micólicos) que o torna resistente a desinfetantes. Causa a tuberculose bovina.',
+    behavior: 'Imóvel: não tem flagelos.',
+    healthNote: 'Zoonose: transmite tuberculose ao ser humano, principalmente pelo consumo de leite cru e queijos de leite cru de vacas infectadas. Antes da pasteurização, era uma causa importante de tuberculose em crianças.',
+    industry: 'Foi um dos principais motivos para tornar obrigatória a pasteurização do leite. No Brasil é alvo do PNCEBT (Programa Nacional de Controle e Erradicação da Brucelose e Tuberculose Animal).',
+    finding: 'tuberculose no rebanho — zoonose de notificação obrigatória ao serviço veterinário'
+  },
+  {
+    id: 'brucella',
+    displayName: 'brucella',
+    commonName: 'Brucela',
+    sciName: 'Brucella abortus',
+    wikiTitle: 'Brucella_abortus',
+    shape: 'bacillus', shapeLabel: 'Cocobacilo (bastonete curtíssimo)',
+    color: '#e4e0d4', colorDark: '#47453c',
+    length: 10, width: 6,
+    depth: 4, rarity: 'raro', habitat: ['milk'],
+    motility: 'brownian', speed: 0.06, turnRate: 0.6,
+    health: 'patogenica', gram: 'Gram-negativa',
+    desc: 'Cocobacilo minúsculo — tão curto que quase parece um coco — que sobrevive dentro das células do hospedeiro. Causa a brucelose bovina, que provoca abortos nas vacas e é eliminada no leite.',
+    behavior: 'Imóvel, sem flagelos; por ser tão pequena, é uma das mais difíceis de capturar.',
+    healthNote: 'Zoonose: no ser humano causa a brucelose ("febre ondulante"), com febre que vai e volta, dores nas articulações e cansaço que podem durar meses. É transmitida por leite cru, queijos frescos de leite cru e contato com animais doentes.',
+    industry: 'Também é alvo do PNCEBT: os rebanhos são testados e as bezerras, vacinadas. A pasteurização elimina a bactéria — mais um motivo para nunca consumir leite cru.',
+    finding: 'brucelose no rebanho — zoonose de notificação obrigatória ao serviço veterinário'
+  },
+  {
+    id: 'pseudomonas',
+    displayName: 'pseudomonas',
+    commonName: 'Pseudomonas psicrotrófica',
+    sciName: 'Pseudomonas fluorescens',
+    wikiTitle: 'Pseudomonas_fluorescens',
+    shape: 'bacillus', flagella: 'polar',
+    color: '#e3dfd3', colorDark: '#47453c',
+    length: 17, width: 6,
+    depth: 1, rarity: 'incomum', habitat: ['milk'],
+    motility: 'flagella-smooth', speed: 1.9,
+    health: 'deteriorante', gram: 'Gram-negativa',
+    desc: 'Bastonete com um tufo de flagelos numa das pontas, comum na água, no solo e em superfícies úmidas. É psicrotrófica: multiplica-se bem dentro do tanque de refrigeração do leite.',
+    behavior: 'Nadadora rápida e quase retilínea, empurrada pelos flagelos polares como por uma hélice.',
+    healthNote: 'Não costuma causar doença em pessoas saudáveis, por isso não é tratada como patógeno de origem alimentar. Mas estraga o leite: o produto fica amargo, rançoso e pode até gelificar.',
+    industry: 'Produz proteases e lipases termorresistentes que sobrevivem até ao tratamento UHT e continuam degradando o leite "longa vida" na prateleira. Controle: resfriar rápido, estocar por pouco tempo e higienizar bem tanques e tubulações.',
+    finding: 'refrigeração ou higienização deficiente — encurta a validade do produto'
+  },
+];
+const SPECIES_BY_ID = Object.fromEntries(SPECIES.map(s => [s.id, s]));
+
+// Efeito de cada microrganismo do leite na saúde humana (mostrado ao coletar,
+// no frasco, na ficha e no laudo do lote)
+const HEALTH_INFO = {
+  benefica:     { label: 'BENÉFICA À SAÚDE',               short: 'benéfica',     icon: '✓', color: '#2e7d4f' },
+  deteriorante: { label: 'DETERIORANTE — ESTRAGA O LEITE', short: 'deteriorante', icon: '↓', color: '#b36b00' },
+  patogenica:   { label: 'PATOGÊNICA — FAZ MAL À SAÚDE',   short: 'patogênica',   icon: '!', color: '#c0262d' },
+};
+
+// Perfis de lote de leite cru: cada nova lâmina de leite sorteia um, que fica
+// oculto e muda as chances de cada microrganismo aparecer (boost multiplica o
+// peso de raridade; ausente = 1, 0 = não aparece). O jogador deduz o problema
+// pelo que coleta, e o laudo revela o diagnóstico real e se o agente-chave
+// (key) foi encontrado. somatic = células somáticas espalhadas no fundo.
+const MILK_LOTS = [
+  { id: 'bom', somatic: 20, key: [],
+    diagnosis: 'lote de boa qualidade — ordenha higiênica, rebanho sadio e leite bem refrigerado.',
+    boost: { acidophilus: 1.5, thermophilus: 1.5, lactococcus: 1.5, bulgaricus: 1.5, bifidus: 1.5, kefir: 1.5, pseudomonas: 0.3,
+             ecoli: 0, aureus: 0, salmonella: 0, listeria: 0, campylobacter: 0, bcereus: 0, mbovis: 0, brucella: 0 } },
+  { id: 'mastite', somatic: 260, key: ['aureus'],
+    diagnosis: 'rebanho com mastite (inflamação do úbere) — muitas células somáticas e Staphylococcus aureus.',
+    boost: { aureus: 6, ecoli: 0.8, salmonella: 0.2, campylobacter: 0.2, listeria: 0.2, bcereus: 0.5, mbovis: 0.1, brucella: 0.1 } },
+  { id: 'fecal', somatic: 40, key: ['ecoli', 'salmonella', 'campylobacter'],
+    diagnosis: 'falha de higiene na ordenha — contaminação fecal (E. coli, Salmonella, Campylobacter).',
+    boost: { ecoli: 5, salmonella: 4, campylobacter: 4, aureus: 0.4, listeria: 0.4, bcereus: 0.8, mbovis: 0.1, brucella: 0.1 } },
+  { id: 'frio', somatic: 40, key: ['pseudomonas', 'listeria', 'bcereus'],
+    diagnosis: 'refrigeração deficiente e estocagem longa — proliferação de bactérias que crescem no frio e de esporulados.',
+    boost: { pseudomonas: 6, listeria: 3, bcereus: 3, ecoli: 0.5, aureus: 0.5, salmonella: 0.2, campylobacter: 0.1, mbovis: 0.1, brucella: 0.1 } },
+  { id: 'zoonose', somatic: 80, key: ['mbovis', 'brucella'],
+    diagnosis: 'rebanho com tuberculose e/ou brucelose — zoonoses de notificação obrigatória ao serviço veterinário.',
+    boost: { mbovis: 6, brucella: 6, aureus: 0.6, ecoli: 0.5, salmonella: 0.2, campylobacter: 0.2, listeria: 0.2, bcereus: 0.5 } },
 ];
 
 const RARITY_INFO = {
@@ -1285,7 +1679,9 @@ class Organism {
     // whole-body breathing pulse — a uniform scale-up/down, not surface ripple.
     // Only flagellated species get this (set up below, after species is known).
     this.pulsePhase = Math.random() * Math.PI * 2;
-    this.hasFlagella = !!(species.flagella && species.flagella !== 'none');
+    // (legacy crawling-flagellate gait; swimming bacteria with flagella — run
+    // and tumble, smooth swimmers — use their own motility instead)
+    this.hasFlagella = !!(species.flagella && species.flagella !== 'none' && species.crawlGait);
 
     this.runTimer = 1 + Math.random()*2;
 
@@ -1493,6 +1889,35 @@ class Organism {
     return cilia;
   }
 
+  // Bacterial flagella, as whip chains (TailChain) on a rod L long, W wide:
+  //  * 'peritrichous' / 'peritrichous-dense' (E. coli, Salmonella, Listeria):
+  //    attached all along both flanks; while swimming they trail behind the
+  //    cell in a loose bundle;
+  //  * 'polar' (Pseudomonas): a tuft at the rear pole, pushing like a propeller.
+  // Real flagella are only ~20 nm thick — barely visible in brightfield — so
+  // they are drawn thin and faint.
+  _bacterialFlagella(g, s, L, W){
+    if(!s.flagella || s.flagella === 'none') return;
+    const add = (ax, ay, rest, segs, segLen, flutter)=>{
+      const chain = new TailChain(segs, segLen, { stiffness: 0.45, damping: 0.74 });
+      const tailEl = el('path', { d:'', fill:'none', stroke:s.colorDark, 'stroke-width':0.6, 'stroke-opacity':0.45, 'stroke-linecap':'round' });
+      g.appendChild(tailEl);
+      this.tails.push({ chain, el: tailEl, localAttach: { x: ax, y: ay }, restAngle: rest,
+                        flutterPhase: Math.random()*Math.PI*2, flutterAmount: flutter });
+    };
+    if(s.flagella === 'polar'){
+      [-0.2, 0.2].forEach(off=> add(-L/2 + W*0.15, off*W, Math.PI + off*1.1, 5, L*0.2, 1.8));
+      return;
+    }
+    const n = s.flagella === 'peritrichous-dense' ? 8 : 4;
+    const perSide = Math.ceil(n/2);
+    for(let i=0;i<n;i++){
+      const side = i%2 ? 1 : -1;
+      const k = Math.floor(i/2) / Math.max(1, perSide-1); // 0 front .. 1 rear
+      add(L*0.3 - k*L*0.6, side*W*0.45, Math.PI - side*0.32, 5, L*0.18, 1.5);
+    }
+  }
+
   // Soft-membrane elliptical outline whose vertices get wobbled in render()
   // via SoftBlob, with an asymmetry function so the same machinery can draw
   // a plain oval, a kidney-bean curve, or any other smoothly-asymmetric blob
@@ -1562,57 +1987,117 @@ class Organism {
         }
 
         // soft membrane body instead of a rigid <rect>: closed path through
-        // vertices around a capsule outline, each vertex wobbles independently in render()
-        const basePts = this._softCapsulePath(L, W, 5);
+        // vertices around a capsule outline. A bacterial cell wall is stiff, so
+        // the wobble is kept small; the caps add W, hence L-W for an overall length L.
+        const basePts = this._softCapsulePath(Math.max(0.1, L-W), W, 5);
         const path = el('path', Object.assign({ d:'' }, fa));
         g.appendChild(path);
-        this.softBlob = new SoftBlob(basePts.length, { amp: 0.07, speed: 1.4 });
+        this.softBlob = new SoftBlob(basePts.length, { amp: 0.025, speed: 1.0 });
         this._softBasePts = basePts;
         this._softPathEl = path;
-
-        if(s.flagella && s.flagella.startsWith('peritrichous')){
-          const n = s.flagella === 'peritrichous-dense' ? 8 : 5;
-          for(let i=0;i<n;i++){
-            const t = (i/n) * Math.PI*2;
-            const attachX = Math.cos(t)*L*0.44, attachY = Math.sin(t)*W*0.85;
-            const outward = Math.atan2(attachY, attachX);
-            const segCount = 3;
-            const chain = new TailChain(segCount, 2.6, { stiffness: 0.5, damping: 0.72 });
-            const tailEl = el('path', {
-              d:'', fill:'none', stroke: s.colorDark, 'stroke-width':0.75,
-              'stroke-opacity':0.55, 'stroke-linecap':'round'
-            });
-            g.appendChild(tailEl);
-            this.tails.push({
-              chain, el: tailEl,
-              localAttach: { x: attachX, y: attachY },
-              restAngle: outward,
-              flutterPhase: Math.random()*Math.PI*2,
-              flutterAmount: 1.3
-            });
+        this._bacterialFlagella(g, s, L, W);
+        return g;
+      }
+      case 'bacillus-chain': {
+        // rods that stay attached end to end after dividing (lactobacilli,
+        // Bacillus), with a slight kink at each septum that flexes in render();
+        // spore-formers carry a bright refractile endospore in most cells
+        const g = el('g', {});
+        const n = s.chainCells || 3, gap = W*0.16;
+        const cellL = (L - gap*(n-1))/n;
+        const cells = [];
+        for(let i=0;i<n;i++){
+          const cg = el('g', {});
+          cg.appendChild(el('rect', Object.assign({
+            x:(-cellL/2).toFixed(2), y:(-W/2).toFixed(2), width:cellL.toFixed(2), height:W.toFixed(2), rx:(W*0.46).toFixed(2)
+          }, fa)));
+          if(s.spores && Math.random() < 0.75){
+            cg.appendChild(el('ellipse', {
+              cx:(cellL*(Math.random()<0.5 ? 0.14 : -0.04)).toFixed(2), cy:0, rx:(W*0.36).toFixed(2), ry:(W*0.26).toFixed(2),
+              fill:'#fdfcf5', opacity:1, stroke:s.colorDark, 'stroke-width':0.5, 'stroke-opacity':0.6
+            }));
           }
+          g.appendChild(cg);
+          cells.push({ g:cg, x: -L/2 + cellL/2 + i*(cellL+gap), kink:(Math.random()-0.5)*0.22, ph:Math.random()*Math.PI*2 });
         }
+        this._rodChain = { cells, W };
+        return g;
+      }
+      case 'bifid-rod': {
+        // Bifidobacterium: an irregular rod that forks into a "Y" at one end,
+        // with slightly swollen (clubbed) tips. Drawn as a dark stroked layer
+        // with a narrower pale layer on top (translucent body, dark margins);
+        // each layer is a group so overlapping strokes don't double up.
+        const g = el('g', {});
+        const fork = L*0.08, tipX = L/2, spread = W*1.4;
+        const d = `M ${-L/2} 0 L ${fork} 0 Q ${((fork+tipX)/2).toFixed(2)} ${(-spread*0.2).toFixed(2)} ${tipX} ${(-spread).toFixed(2)} M ${fork} 0 Q ${((fork+tipX)/2).toFixed(2)} ${(spread*0.2).toFixed(2)} ${tipX} ${spread.toFixed(2)}`;
+        const clubs = `M ${-L/2} 0 l 0.01 0 M ${tipX} ${(-spread).toFixed(2)} l 0.01 0 M ${tipX} ${spread.toFixed(2)} l 0.01 0`;
+        const layer = (color, op, wBody, wClub)=>{
+          const lg = el('g', { opacity: op });
+          lg.appendChild(el('path', { d, fill:'none', stroke:color, 'stroke-width':wBody, 'stroke-linecap':'round', 'stroke-linejoin':'round' }));
+          lg.appendChild(el('path', { d:clubs, fill:'none', stroke:color, 'stroke-width':wClub, 'stroke-linecap':'round' }));
+          return lg;
+        };
+        g.appendChild(layer(s.colorDark, 0.55, W, W*1.35));
+        g.appendChild(layer(s.color, 0.95, W*0.6, W*0.95));
+        return g;
+      }
+      case 'budding-yeast': {
+        // Yeast: a large oval mother cell with a vacuole and storage granules,
+        // and a daughter bud at one pole that slowly swells (see render) until
+        // it pinches off and a new one starts
+        const g = el('g', {});
+        const bud = el('circle', Object.assign({ cx: L*0.45, cy: 0, r: W*0.2 }, this._fillAttrs(s, 0.34)));
+        g.appendChild(bud);
+        const path = el('path', Object.assign({ d:'' }, this._fillAttrs(s, 0.34)));
+        g.appendChild(path);
+        const nverts = 16;
+        this._softBasePts = this._softEllipsePath(L*0.74, W, nverts);
+        this.softBlob = new SoftBlob(nverts, { amp: 0.015, speed: 0.6 });
+        this._softPathEl = path;
+        g.appendChild(el('ellipse', { cx:(-L*0.06).toFixed(2), cy:(W*0.05).toFixed(2), rx:(W*0.24).toFixed(2), ry:(W*0.2).toFixed(2),
+          fill:'#f6f4ea', 'fill-opacity':0.7, stroke:s.colorDark, 'stroke-width':0.45, 'stroke-opacity':0.55 }));
+        for(let i=0;i<7;i++){
+          const a = Math.random()*Math.PI*2, r = Math.sqrt(Math.random());
+          g.appendChild(el('circle', { cx:(Math.cos(a)*L*0.25*r).toFixed(2), cy:(Math.sin(a)*W*0.32*r).toFixed(2), r:(0.4+Math.random()*0.4).toFixed(2), fill:s.colorDark, opacity:0.4 }));
+        }
+        this._bud = { el: bud, L, W, t: Math.random() };
         return g;
       }
       case 'coccus-cluster': {
+        // Staphylococcus: cells divide in several planes and stay stuck
+        // together in irregular, grape-like clusters. Hex-packed positions
+        // around a central cell, kept at random — an outer cell only if it
+        // still touches a kept neighbour, so the cluster never falls apart.
         const g = el('g', {});
-        const positions = [[-3,-3],[3,-3],[-3,3],[3,3],[0,0]];
-        positions.forEach(([dx,dy])=>{
-          g.appendChild(el('circle', Object.assign({ cx:dx, cy:dy, r: W*0.32 }, fa)));
-        });
-        this._cocciBase = positions.map(([dx,dy])=>({dx,dy}));
-        this._cocciEls = Array.from(g.children);
+        const step = W*0.8, r = W*0.44;
+        const kept = [[0,0]];
+        for(let ring=1; ring<=2; ring++){
+          for(let q=-2;q<=2;q++) for(let rr=-2;rr<=2;rr++){
+            const x = (q + rr/2)*step, y = rr*step*0.866, dist = Math.hypot(x,y)/step;
+            if(dist < ring-0.5 || dist >= ring+0.5) continue;
+            const touches = kept.some(([kx,ky])=> Math.hypot(kx-x, ky-y) < step*1.05);
+            if(touches && Math.random() < (ring===1 ? 0.85 : 0.35)) kept.push([x,y]);
+          }
+        }
+        kept.forEach(([x,y])=> g.appendChild(el('circle', Object.assign({
+          cx:(x + (Math.random()-0.5)*W*0.08).toFixed(2), cy:(y + (Math.random()-0.5)*W*0.08).toFixed(2),
+          r:(r*(0.92 + Math.random()*0.16)).toFixed(2)
+        }, fa))));
         return g;
       }
       case 'coccus-chain': {
+        // cocci dividing in one plane: a bead chain (Streptococcus) or, with
+        // chainCells: 2, a pair (diplococcus) that only sways a little
         const g = el('g', {});
-        const n = 5;
+        const n = s.chainCells || 5;
+        const amp = n > 2 ? 0.32 : 0.06;
         for(let i=0;i<n;i++){
           const t = i-(n-1)/2;
-          const curve = Math.sin(i*0.9) * W*0.32;
+          const curve = Math.sin(i*0.9) * W*amp;
           g.appendChild(el('circle', Object.assign({ cx: t*W*0.82, cy: curve, r: W*0.42 }, fa)));
         }
-        this.chainCurve = { n, W };
+        this.chainCurve = { n, W, amp, els: Array.from(g.children) };
         return g;
       }
       case 'giant-coccus': {
@@ -1640,7 +2125,7 @@ class Organism {
       }
       case 'spirillum': {
         const g = el('g', {});
-        const turns = 2.4;
+        const turns = s.turns || 2.4;
         const pts = [];
         const steps = 40;
         for(let i=0;i<=steps;i++){
@@ -1651,10 +2136,12 @@ class Organism {
         }
         const path = el('polyline', {
           points:'', fill:'none', stroke: s.colorDark, 'stroke-opacity':0.55,
-          'stroke-width': 2.6, 'stroke-linecap':'round'
+          'stroke-width': 2.6, 'stroke-linecap':'round', 'stroke-linejoin':'round'
         });
         g.appendChild(path);
-        this.wavePoints = { turns, steps, L, W, basePts: pts };
+        // the helix wave travels along the body, so the cell reads as a
+        // spinning corkscrew rather than a wiggling line
+        this.wavePoints = { turns, steps, L, W, basePts: pts, travel: true };
         this.waveEl = path;
 
         // bipolar flagellar tufts at both ends, whipping with real lag
@@ -2307,11 +2794,14 @@ class Organism {
     // heading (this.angle) with a capped angular speed that depends on how the
     // organism moves — a ciliate pivots briskly, a crawling amoeba or a
     // gliding diatom turns slowly. No overshoot, frame-rate independent.
-    const TURN_RATE = { cilia:2.6, 'flagellate-whip':2.2, 'flagella-colony':0.9, crawl:1.1, gliding:0.7, stalked:1.0, brownian:3.0 };
+    const TURN_RATE = { cilia:2.6, 'flagellate-whip':2.2, 'flagella-colony':0.9, crawl:1.1, gliding:0.7, stalked:1.0, brownian:3.0,
+                        'flagella-run-tumble':6.0, 'flagella-smooth':3.2 };
     let delta = this.angle - this.displayAngle;
     delta = Math.atan2(Math.sin(delta), Math.cos(delta));
     {
-      const rate = (TURN_RATE[mot] || 2.0) * (this.fleeing ? 3 : 1);
+      // species can override (long bacterial chains and clusters jiggle in
+      // place but don't spin around like a small free cell would)
+      const rate = (this.species.turnRate || TURN_RATE[mot] || 2.0) * (this.fleeing ? 3 : 1);
       const eased = delta * (1 - Math.exp(-dt*5));
       const maxStep = rate * dt;
       this.displayAngle += Math.max(-maxStep, Math.min(maxStep, eased));
@@ -2373,13 +2863,22 @@ class Organism {
 
     switch(s.motility){
       case 'flagella-run-tumble': {
-        this.runTimer -= dt;
-        if(this.runTimer <= 0){
-          this.angle += (Math.random()-0.5) * Math.PI * 1.4;
-          this.runTimer = 0.6 + Math.random()*1.8;
-        } else {
-          this.angle += (Math.random()-0.5)*0.05;
+        // E. coli-style chemotaxis gait: straight "runs" with the flagella
+        // bundled behind, broken by brief "tumbles" — the bundle flies apart,
+        // the cell almost stops and re-points at random before the next run
+        if(this._tumble > 0){
+          this._tumble -= dt;
+          this.speed = this.baseSpeed*0.08;
+          if(this._tumble <= 0){
+            this.angle = this.displayAngle + (Math.random()-0.5) * Math.PI * 1.6;
+            this.runTimer = 0.6 + Math.random()*1.8;
+          }
+          break;
         }
+        this.speed = this.baseSpeed;
+        this.runTimer -= dt;
+        this.angle += (Math.random()-0.5)*0.04;
+        if(this.runTimer <= 0) this._tumble = 0.18 + Math.random()*0.25;
         break;
       }
       case 'flagella-smooth': {
@@ -2615,13 +3114,30 @@ class Organism {
     if(this.volvoxInner){
       this.volvoxInner.setAttribute('transform', `rotate(${(this.phase*20)%360})`);
     }
-    if(this.chainCurve && this.bodyEl){
-      const { n, W } = this.chainCurve;
-      const circles = this.bodyEl.querySelectorAll('circle');
-      circles.forEach((c,i)=>{
-        const curve = Math.sin(this.phase*0.6 + i*0.9) * W*0.32;
+    if(this.chainCurve){
+      const { W, amp, els } = this.chainCurve;
+      els.forEach((c,i)=>{
+        const curve = Math.sin(this.phase*0.6 + i*0.9) * W*amp;
         c.setAttribute('cy', curve.toFixed(2));
       });
+    }
+    // chain of rods: each cell bends a little at its septum, like a loose
+    // string of sausages being nudged by the surrounding liquid
+    if(this._rodChain){
+      const { cells, W } = this._rodChain;
+      cells.forEach((c,i)=>{
+        const bend = c.kink + Math.sin(this.phase*0.45 + c.ph)*0.07;
+        const dy = Math.sin(this.phase*0.4 + i*1.1) * W*0.14;
+        c.g.setAttribute('transform', `translate(${c.x.toFixed(2)},${dy.toFixed(2)}) rotate(${(bend*57.3).toFixed(1)})`);
+      });
+    }
+    // budding yeast: the bud swells over ~25 s, then pinches off and restarts
+    if(this._bud){
+      const b = this._bud;
+      b.t = (b.t + dt*0.04) % 1;
+      const r = b.W*(0.12 + 0.3*b.t);
+      b.el.setAttribute('r', r.toFixed(2));
+      b.el.setAttribute('cx', (b.L*0.37 + r*0.7).toFixed(2));
     }
 
     // soft membrane wobble: perturb each base vertex radially by its own phase,
@@ -2733,9 +3249,10 @@ class Organism {
     // wobble, plus — for flagellated species — a uniform breathing pulse that
     // scales the whole helix's length (and its wave amplitude with it) in and out.
     if(this.wavePoints && this.waveEl && !this._wormWave){
-      const { steps, basePts } = this.wavePoints;
+      const { steps, basePts, travel, turns, W } = this.wavePoints;
       const pulse = this.hasFlagella ? (1 + Math.sin(this.pulsePhase)*0.11) : 1;
       const pts = basePts.map(([xx,yy], i)=>{
+        if(travel) yy = Math.sin((i/steps)*Math.PI*2*turns - this.phase*2.2) * (W/2);
         const localWave = Math.sin(this.phase*1.4 + (i/steps)*Math.PI*2*1.6) * 0.6;
         return `${(xx*pulse).toFixed(1)},${((yy+localWave)*pulse).toFixed(1)}`;
       });
@@ -2902,6 +3419,7 @@ Organism.DEATH_TIME = 1.8;
   const reel = document.getElementById('reel');
   const driedOverlay = document.getElementById('dried-overlay');
   const driedSummary = document.getElementById('dried-summary');
+  const driedTitle = document.getElementById('dried-title');
   const restartBtn = document.getElementById('restart-btn');
   const shapeListEl = document.getElementById('shape-list');
 
@@ -2915,6 +3433,14 @@ Organism.DEATH_TIME = 1.8;
   const hudDryPct = document.getElementById('hud-dry-pct');
   const hudDryBar = document.getElementById('hud-dry-bar');
   const hudDryRow = document.getElementById('hud-dry-row');
+  const hudDryLabel = document.getElementById('hud-dry-label');
+  const hudMilkLot = document.getElementById('hud-milk-lot');
+  const hudMilkGood = document.getElementById('hud-milk-good');
+  const hudMilkSpoil = document.getElementById('hud-milk-spoil');
+  const hudMilkBad = document.getElementById('hud-milk-bad');
+  const hudMilkRisk = document.getElementById('hud-milk-risk');
+  const hudMilkRiskRow = document.getElementById('hud-milk-risk-row');
+  const laudoBtn = document.getElementById('laudo-btn');
 
   const panelOverlay = document.getElementById('panel-overlay');
   const panelClose = document.getElementById('panel-close');
@@ -2950,13 +3476,27 @@ Organism.DEATH_TIME = 1.8;
   let dryElapsed = 0;
   let gameOver = false;
   let simTime = 0;
-  let currentSlide = 'water'; // 'water' | 'soil'
+  let currentSlide = 'water'; // 'water' | 'soil' | 'milk'
   const SLIDE_INFO = {
-    water: { label:'Lâmina 01 · Água de lagoa', hud:'água',
+    water: { label:'Lâmina 01 · Água de lagoa', hud:'água de lagoa', liquid:'água',
              tint:['#c3ccc0','#aab4a5','#8f9a8a'] },
-    soil:  { label:'Lâmina 02 · Solo úmido',     hud:'solo',
+    soil:  { label:'Lâmina 02 · Solo úmido',     hud:'solo úmido', liquid:'água',
              tint:['#cfc6ad','#b5a886','#958665'] },
+    milk:  { label:'Lâmina 03 · Leite cru',      hud:'leite cru', liquid:'leite',
+             tint:['#f2eee2','#e4ddca','#d2c9b2'] },
   };
+
+  // ---- milk quality-control session: one hidden lot profile per milk slide,
+  // and what the analyst collected from it (feeds the HUD and the final report)
+  let milkSession = null;
+  function newMilkLot(){
+    milkSession = {
+      lot: MILK_LOTS[Math.floor(Math.random()*MILK_LOTS.length)],
+      number: String(1000 + Math.floor(Math.random()*9000)),
+      caught: {}
+    };
+  }
+  newMilkLot();
 
   function clampCamera(){
     camera.x = Math.max(0, Math.min(MAP_W - VIEW_W, camera.x));
@@ -3039,17 +3579,18 @@ Organism.DEATH_TIME = 1.8;
   function buildDebris(slide){
     while(grainGroup.firstChild) grainGroup.removeChild(grainGroup.firstChild);
     const R = Math.random;
-    // fine particulate everywhere (both slides): tiny out-of-focus specks
+    // fine particulate everywhere (every slide): tiny out-of-focus specks
+    // (in milk: the haze of casein micelles and tiny fat droplets)
     const fineN = slide==='soil' ? 1400 : 1000;
     for(let i=0;i<fineN;i++){
       grainGroup.appendChild(el('circle', {
         cx:(R()*MAP_W).toFixed(1), cy:(R()*MAP_H).toFixed(1), r:(0.3+R()*0.9).toFixed(2),
-        fill: slide==='soil' ? (R()<0.5?'#7d6e52':'#9a8a68') : (R()<0.5?'#8a8677':'#a8a493'),
+        fill: slide==='soil' ? (R()<0.5?'#7d6e52':'#9a8a68') : slide==='milk' ? (R()<0.5?'#a39b84':'#bdb59e') : (R()<0.5?'#8a8677':'#a8a493'),
         opacity:(0.12+R()*0.2).toFixed(2)
       }));
     }
-    // organic fibers (plant debris / root hairs in soil)
-    const fiberN = slide==='soil' ? 200 : 120;
+    // organic fibers (plant debris / root hairs in soil); none in milk
+    const fiberN = slide==='soil' ? 200 : slide==='milk' ? 0 : 120;
     for(let i=0;i<fiberN;i++){
       const x1 = R()*MAP_W, y1 = R()*MAP_H, ang = R()*Math.PI*2, len = 30+R()*90;
       const bend = (R()-0.5)*30;
@@ -3085,6 +3626,42 @@ Organism.DEATH_TIME = 1.8;
           rx:(1+R()*5).toFixed(1), ry:(0.8+R()*3).toFixed(1),
           fill:'#4a3a26', opacity:(0.25+R()*0.3).toFixed(2), transform:`rotate(${(R()*180).toFixed(0)})`
         }));
+      }
+    } else if(slide==='milk'){
+      // milk is an emulsion: thousands of fat globules of every size, each a
+      // bright refractile sphere with a thin dark rim — the signature look of
+      // a drop of milk under the objective
+      for(let i=0;i<2300;i++){
+        const r = 1.2 + Math.pow(R(), 2.4)*13;
+        const cx = R()*MAP_W, cy = R()*MAP_H;
+        grainGroup.appendChild(el('circle', {
+          cx:cx.toFixed(1), cy:cy.toFixed(1), r:r.toFixed(1),
+          fill:'#fffef8', 'fill-opacity':0.5,
+          stroke:'#857d68', 'stroke-width':(0.3 + r*0.07).toFixed(2), 'stroke-opacity':0.36
+        }));
+        if(r > 6) grainGroup.appendChild(el('circle', { cx:(cx-r*0.3).toFixed(1), cy:(cy-r*0.3).toFixed(1), r:(r*0.25).toFixed(1), fill:'#ffffff', opacity:0.5 }));
+      }
+      // somatic cells (mostly leucocytes with a lobed nucleus): a few are
+      // normal, a lot of them means the udder is inflamed (mastitis) — the
+      // CCS the dairy counts on every batch
+      const somatic = (milkSession && milkSession.lot.somatic) || 20;
+      for(let i=0;i<somatic;i++){
+        const cx = R()*MAP_W, cy = R()*MAP_H, r = 7 + R()*3;
+        grainGroup.appendChild(el('circle', { cx:cx.toFixed(1), cy:cy.toFixed(1), r:r.toFixed(1),
+          fill:'#f1ede1', 'fill-opacity':0.55, stroke:'#6a624f', 'stroke-width':0.6, 'stroke-opacity':0.5 }));
+        for(let k=0;k<8;k++){
+          const a = R()*Math.PI*2, rr = Math.sqrt(R())*r*0.8;
+          grainGroup.appendChild(el('circle', { cx:(cx+Math.cos(a)*rr).toFixed(1), cy:(cy+Math.sin(a)*rr).toFixed(1), r:0.35, fill:'#6a624f', opacity:0.35 }));
+        }
+        const lobes = 3 + Math.floor(R()*2), rot = R()*Math.PI*2;
+        for(let k=0;k<lobes;k++){
+          const a = rot + (k - (lobes-1)/2)*0.85;
+          grainGroup.appendChild(el('ellipse', {
+            cx:(cx + Math.cos(a)*r*0.42).toFixed(1), cy:(cy + Math.sin(a)*r*0.42).toFixed(1),
+            rx:(r*0.26).toFixed(1), ry:(r*0.19).toFixed(1), fill:'#7a6f8a', opacity:0.42,
+            transform:`rotate(${(a*57.3).toFixed(0)} ${(cx + Math.cos(a)*r*0.42).toFixed(1)} ${(cy + Math.sin(a)*r*0.42).toFixed(1)})`
+          }));
+        }
       }
     } else {
       // pond water: occasional trapped air bubbles — thick dark ring, bright
@@ -3252,10 +3829,22 @@ Organism.DEATH_TIME = 1.8;
 
   function speciesForDepth(depth){ return SPECIES.filter(s => s.depth === depth && s.habitat.includes(currentSlide)); }
 
+  // spawn weight: rarity, scaled on the milk slide by the hidden lot profile
+  // (a mastitis lot is full of S. aureus, a well-kept lot has no pathogens...)
+  function speciesWeight(sp){
+    let w = RARITY_INFO[sp.rarity].weight;
+    if(currentSlide === 'milk' && milkSession){
+      const b = milkSession.lot.boost[sp.id];
+      if(b !== undefined) w *= b;
+    }
+    return w;
+  }
+
   // species with a maxInView cap (e.g. tardigrades) are skipped once that
   // many are already in the field of view
   function availableSpecies(depth){
     return speciesForDepth(depth).filter(sp=>{
+      if(speciesWeight(sp) <= 0) return false;
       if(!sp.maxInView) return true;
       const n = organisms.filter(o=> o.species.id===sp.id && !o.dying &&
         o.x > camera.x-60 && o.x < camera.x+VIEW_W+60 && o.y > camera.y-60 && o.y < camera.y+VIEW_H+60).length;
@@ -3266,10 +3855,10 @@ Organism.DEATH_TIME = 1.8;
   function pickWeightedSpecies(depth){
     const pool = availableSpecies(depth);
     if(pool.length === 0) return null;
-    const total = pool.reduce((sum,s)=> sum + RARITY_INFO[s.rarity].weight, 0);
+    const total = pool.reduce((sum,s)=> sum + speciesWeight(s), 0);
     let r = Math.random()*total;
     for(const s of pool){
-      r -= RARITY_INFO[s.rarity].weight;
+      r -= speciesWeight(s);
       if(r <= 0) return s;
     }
     return pool[pool.length-1];
@@ -3395,9 +3984,8 @@ Organism.DEATH_TIME = 1.8;
   }
 
   // ---- shape rail (left) ----
-  // the rail now lists exactly the 22 requested species, by their displayName —
-  // one row per real organism in SPECIES, not a decorative shape taxonomy.
-  const SHAPE_LABELS = SPECIES.map(s => s.displayName);
+  // the rail lists every species in SPECIES, by its displayName — one row per
+  // real organism, not a decorative shape taxonomy — grouped by sample.
   // small single-color line-art glyphs, same thin-stroke language as the organisms
   // themselves, so the rail reads as a specimen index rather than a plain checklist.
   const SHAPE_ICONS = {
@@ -3427,14 +4015,42 @@ Organism.DEATH_TIME = 1.8;
     volvox:      '<circle cx="8" cy="8" r="5"/><circle cx="6" cy="6.5" r=".7" fill="currentColor" stroke="none"/><circle cx="10" cy="6.2" r=".7" fill="currentColor" stroke="none"/><circle cx="9" cy="10" r=".7" fill="currentColor" stroke="none"/><circle cx="6" cy="10" r=".7" fill="currentColor" stroke="none"/>',
     rotifer:     '<circle cx="6.2" cy="8" r="2.6"/><path d="M8.6 6.4c1.6-1.4 3.6-1.4 4.6-.2-1.4.4-2.4 1-2.8 2.2M8.6 9.6c1.6 1.4 3.6 1.4 4.6.2-1.4-.4-2.4-1-2.8-2.2" fill="none" stroke-width=".8"/>',
     tardigrado:  '<path d="M2.6 8c0-2 2.4-3.3 5.4-3.3s5.4 1.3 5.4 3.3-2.4 3.3-5.4 3.3S2.6 10 2.6 8z"/><path d="M5.2 5V3.5M7.6 4.8V3.3M10 5V3.6M5.2 11v1.5M7.6 11.2v1.5M10 11v1.4M3 6.8l-1.4-.9M3 9.2l-1.4.9" stroke-width=".8"/>',
-    vorticella:  '<path d="M8 2.6c2.6 0 4.6 2 4.6 4.4 0 2-1.6 3.4-4.6 3.4S3.4 9 3.4 7c0-2.4 2-4.4 4.6-4.4z"/><line x1="8" y1="10.4" x2="8" y2="14" stroke-width=".9"/>'
+    vorticella:  '<path d="M8 2.6c2.6 0 4.6 2 4.6 4.4 0 2-1.6 3.4-4.6 3.4S3.4 9 3.4 7c0-2.4 2-4.4 4.6-4.4z"/><line x1="8" y1="10.4" x2="8" y2="14" stroke-width=".9"/>',
+    // milk
+    acidophilus:   '<rect x="1" y="6.5" width="4.2" height="3" rx="1.5"/><rect x="5.9" y="6.5" width="4.2" height="3" rx="1.5"/><rect x="10.8" y="6.5" width="4.2" height="3" rx="1.5"/>',
+    thermophilus:  '<circle cx="2.6" cy="8.8" r="1.5"/><circle cx="5.5" cy="7.6" r="1.5"/><circle cx="8.4" cy="7.3" r="1.5"/><circle cx="11.3" cy="8" r="1.5"/><circle cx="14" cy="9.1" r="1.3"/>',
+    lactococcus:   '<circle cx="5.6" cy="8" r="2.6"/><circle cx="10.4" cy="8" r="2.6"/>',
+    bulgaricus:    '<rect x="1" y="6.6" width="6.6" height="2.8" rx="1.4"/><rect x="8.4" y="6.6" width="6.6" height="2.8" rx="1.4" transform="rotate(8 11.7 8)"/>',
+    bifidus:       '<path d="M1.8 8H8.2M8.2 8l5.4-3.6M8.2 8l5.4 3.6" fill="none" stroke-width="1.6" stroke-linecap="round"/>',
+    kefir:         '<ellipse cx="6.6" cy="8" rx="4.4" ry="3.6"/><circle cx="12.6" cy="7.6" r="1.9"/>',
+    'e. coli':     '<rect x="4.5" y="5.8" width="9" height="4.4" rx="2.2"/><path d="M4.6 6.8c-1-.6-2-.2-3-.8M4.6 9.2c-1 .6-2 .2-3 .8" fill="none" stroke-width=".7"/>',
+    's. aureus':   '<circle cx="6" cy="6" r="2"/><circle cx="10" cy="6" r="2"/><circle cx="4" cy="9.6" r="2"/><circle cx="8" cy="9.6" r="2"/><circle cx="12" cy="9.6" r="2"/>',
+    salmonella:    '<rect x="4" y="5.8" width="8" height="4.4" rx="2.2"/><path d="M4.4 6.2 2.6 4.4M4.4 9.8 2.6 11.6M8 5.8V3.6M8 10.2v2.2M11.6 6.2l1.8-1.8M11.6 9.8l1.8 1.8" fill="none" stroke-width=".7"/>',
+    listeria:      '<rect x="5" y="5.6" width="7" height="4.8" rx="2.4"/><path d="M5.2 7c-1.2-.8-2.2-.4-3.2-1M5.2 9c-1.2.8-2.2.4-3.2 1" fill="none" stroke-width=".7"/>',
+    'c. jejuni':   '<path d="M2 9.6c1.6-4 4.4-4 6 0s4.4 4 6 0" fill="none" stroke-width="1.4"/>',
+    'b. cereus':   '<rect x="1" y="5.8" width="6.6" height="4.4" rx="1.2"/><rect x="8.4" y="5.8" width="6.6" height="4.4" rx="1.2"/><ellipse cx="4.6" cy="8" rx="1.3" ry=".9"/><ellipse cx="11.4" cy="8" rx="1.3" ry=".9"/>',
+    'm. bovis':    '<path d="M2.5 6.5c3.5-1 7.5-1 11 1M3.5 10.5c3-.8 6-.4 8.5.8" fill="none" stroke-width="1.3" stroke-linecap="round"/>',
+    brucella:      '<ellipse cx="5.5" cy="7" rx="2" ry="1.5"/><ellipse cx="10.5" cy="9.2" rx="2" ry="1.5"/>',
+    pseudomonas:   '<rect x="6" y="5.8" width="8" height="4.4" rx="2.2"/><path d="M6.1 8c-1.2-1.3-2.1-1.3-2.7 0S2 9.3 1 8" fill="none" stroke-width=".8"/>'
   };
-  SHAPE_LABELS.forEach(label=>{
+  let lastRailGroup = null;
+  SPECIES.forEach(sp=>{
+    const group = sp.habitat.includes('milk') ? 'milk' : 'env';
+    if(group !== lastRailGroup){
+      const sub = document.createElement('div');
+      sub.className = 'rail-sub';
+      sub.textContent = group === 'milk' ? 'Leite · laticínios' : 'Água e solo';
+      shapeListEl.appendChild(sub);
+      lastRailGroup = group;
+    }
+    const label = sp.displayName;
     const row = document.createElement('div');
     row.className = 'shape-entry';
     row.dataset.label = label;
     const glyph = SHAPE_ICONS[label] || '<circle cx="8" cy="8" r="3"/>';
-    row.innerHTML = `<svg class="sw" viewBox="0 0 16 16">${glyph}</svg><span>${label}</span>`;
+    // the health dot only shows once the species has been collected
+    const dot = sp.health ? `<i class="hdot ${sp.health}" title="${HEALTH_INFO[sp.health].short}"></i>` : '';
+    row.innerHTML = `<svg class="sw" viewBox="0 0 16 16">${glyph}</svg><span>${label}</span>${dot}`;
     shapeListEl.appendChild(row);
   });
 
@@ -3626,16 +4242,18 @@ Organism.DEATH_TIME = 1.8;
   }
   requestAnimationFrame(holdLoop);
 
-  function showToast(msg, isWarn){
+  // color / duration are optional: the milk slide tints the toast with the
+  // health verdict and keeps it up longer so it can be read
+  function showToast(msg, isWarn, color, duration){
     toast.textContent = msg;
-    toast.style.color = isWarn ? '#b0322a' : '#111';
-    toast.style.borderColor = '#111';
+    toast.style.color = color || (isWarn ? '#b0322a' : '#111');
+    toast.style.borderColor = color || '#111';
     toast.animate([
       { opacity:0, transform:'translate(-50%, -6px)' },
       { opacity:1, transform:'translate(-50%, 0)', offset:0.15 },
       { opacity:1, transform:'translate(-50%, 0)', offset:0.8 },
       { opacity:0, transform:'translate(-50%, -6px)' }
-    ], { duration: 1500, easing:'ease-out' });
+    ], { duration: duration || 1500, easing:'ease-out' });
   }
 
   function completeCapture(org){
@@ -3655,9 +4273,17 @@ Organism.DEATH_TIME = 1.8;
       if(idx>=0) organisms.splice(idx,1);
     };
 
-    caughtLog[org.species.id] = (caughtLog[org.species.id]||0) + 1;
-    markShapeDiscovered(org.species);
-    showToast(`Coletado: ${org.species.displayName} (${RARITY_INFO[org.species.rarity].label})`, false);
+    const sp = org.species;
+    caughtLog[sp.id] = (caughtLog[sp.id]||0) + 1;
+    markShapeDiscovered(sp);
+    if(sp.health){
+      // milk microbes: say right away whether it is good or bad for people
+      if(currentSlide === 'milk') milkSession.caught[sp.id] = (milkSession.caught[sp.id]||0) + 1;
+      const h = HEALTH_INFO[sp.health];
+      showToast(`Coletado: ${sp.displayName} · ${h.icon} ${h.label}`, false, h.color, 2800);
+    } else {
+      showToast(`Coletado: ${sp.displayName} (${RARITY_INFO[sp.rarity].label})`, false);
+    }
     updateHud();
     updateReel();
   }
@@ -3695,6 +4321,31 @@ Organism.DEATH_TIME = 1.8;
     hudFieldCount.textContent = organisms.length;
     hudLifeActive.textContent = organisms.filter(o=>!o.dying).length;
     const hd = document.getElementById('hud-deaths'); if(hd) hd.textContent = deathsAtEdge;
+    updateMilkHud();
+  }
+
+  // ---- milk analysis: counts by health class and the lot's risk level ----
+  function milkCounts(){
+    const c = { benefica:0, deteriorante:0, patogenica:0 };
+    Object.entries(milkSession.caught).forEach(([id, n])=>{ c[SPECIES_BY_ID[id].health] += n; });
+    return c;
+  }
+  function milkRisk(c){
+    if(c.patogenica) return { level:'ALTO', cls:'crit' };
+    if(c.deteriorante) return { level:'MODERADO', cls:'warn' };
+    if(c.benefica) return { level:'BAIXO', cls:'' };
+    return { level:'sem dados', cls:'' };
+  }
+  function updateMilkHud(){
+    if(currentSlide !== 'milk') return;
+    const c = milkCounts(), risk = milkRisk(c);
+    hudMilkLot.textContent = `nº ${milkSession.number}`;
+    hudMilkGood.textContent = c.benefica;
+    hudMilkSpoil.textContent = c.deteriorante;
+    hudMilkBad.textContent = c.patogenica;
+    hudMilkRisk.textContent = risk.level;
+    hudMilkRiskRow.classList.toggle('warn', risk.cls === 'warn');
+    hudMilkRiskRow.classList.toggle('crit', risk.cls === 'crit');
   }
 
   // Compute a per-species scale so thumbnails fill their frame consistently —
@@ -3730,6 +4381,14 @@ Organism.DEATH_TIME = 1.8;
       nameEl.textContent = species.displayName;
       slot.appendChild(nameEl);
       slot.title = `${species.displayName} — ${species.commonName}`;
+      if(species.health){
+        const h = HEALTH_INFO[species.health];
+        const badge = document.createElement('span');
+        badge.className = `health-badge ${species.health}`;
+        badge.textContent = h.icon;
+        slot.appendChild(badge);
+        slot.title += ` — ${h.short}`;
+      }
       slot.addEventListener('click', ()=> openSpeciesPanel(species));
       reel.appendChild(slot);
     });
@@ -3740,8 +4399,21 @@ Organism.DEATH_TIME = 1.8;
     document.getElementById('panel-common-name').textContent = species.displayName;
     document.getElementById('panel-sci-name').textContent = species.sciName;
     document.getElementById('panel-real').textContent = species.commonName;
+    const HABITAT_LABEL = { soil:'solo', water:'água doce', milk:'leite (laticínios)' };
     document.getElementById('panel-habitat').textContent =
-      species.habitat.map(h => h==='soil' ? 'solo' : 'água doce').join(' · ');
+      species.habitat.map(h => HABITAT_LABEL[h] || h).join(' · ');
+    // health verdict + dairy role + Gram: only the milk microbes carry these
+    document.getElementById('panel-health-section').style.display = species.health ? '' : 'none';
+    document.getElementById('panel-industry-section').style.display = species.industry ? '' : 'none';
+    document.getElementById('panel-gram-row').style.display = species.gram ? '' : 'none';
+    if(species.health){
+      const tag = document.getElementById('panel-health-tag');
+      tag.className = `health-tag ${species.health}`;
+      tag.textContent = `${HEALTH_INFO[species.health].icon} ${HEALTH_INFO[species.health].label}`;
+      document.getElementById('panel-health').textContent = species.healthNote;
+    }
+    document.getElementById('panel-industry').textContent = species.industry || '';
+    document.getElementById('panel-gram').textContent = species.gram || '';
     const wiki = document.getElementById('panel-wiki');
     wiki.href = wikipediaUrl(species);
     wiki.textContent = `Ver "${species.commonName}" na Wikipedia ↗`;
@@ -3751,7 +4423,7 @@ Organism.DEATH_TIME = 1.8;
     document.getElementById('panel-desc').textContent = species.desc;
     document.getElementById('panel-behavior').textContent = species.behavior;
     document.getElementById('panel-depth').textContent = DEPTH_INFO[species.depth];
-    document.getElementById('panel-shape').textContent = shapeLabel(species.shape);
+    document.getElementById('panel-shape').textContent = species.shapeLabel || shapeLabel(species.shape);
     document.getElementById('panel-motility').textContent = motilityLabel(species.motility);
     document.getElementById('panel-caught-count').textContent = caughtLog[species.id] || 0;
 
@@ -3782,7 +4454,10 @@ Organism.DEATH_TIME = 1.8;
       'diatom-tri':'Carapaça de sílica triangular', 'closterium-crescent':'Meia-lua',
       'spiny-desmid':'Lobulado e espinhoso', 'heliozoan-rays':'Esfera com raios (axópodes)',
       'euglena-flagellate':'Fusiforme com flagelo', 'medusa-bell':'Sino com tentáculos',
-      volvox:'Colônia esférica', tardigrade:'Corpo segmentado com 8 patas e garras', 'rotifer-crown':'Corpo com coroa ciliada', 'vorticella-stalked':'Sino preso a um talo'
+      volvox:'Colônia esférica', tardigrade:'Corpo segmentado com 8 patas e garras', 'rotifer-crown':'Corpo com coroa ciliada', 'vorticella-stalked':'Sino preso a um talo',
+      bacillus:'Bastonete (bacilo)', 'bacillus-chain':'Bastonetes em cadeia', 'coccus-chain':'Cocos em cadeia (colar de contas)',
+      'coccus-cluster':'Cocos em cacho, como uvas', spirillum:'Espiral', 'bifid-rod':'Bastonete ramificado em "Y"',
+      'budding-yeast':'Célula oval com broto (levedura)'
     };
     return map[shape] || shape;
   }
@@ -3852,17 +4527,74 @@ Organism.DEATH_TIME = 1.8;
     }
   }
 
-  function endGame(){
+  // early: true when the analyst issued the report before the drop dried
+  function endGame(early){
     gameOver = true;
-    const totalCaught = Object.values(caughtLog).reduce((a,b)=>a+b,0);
-    const distinct = Object.keys(caughtLog).length;
-    driedSummary.textContent = `Coletados: ${totalCaught} espécimes · ${distinct}/${SPECIES.length} espécies catalogadas.`;
+    if(holding){ holding.suction = false; holding = null; captureProgress.style.display = 'none'; }
+    const isMilk = currentSlide === 'milk';
+    driedOverlay.classList.toggle('laudo', isMilk);
+    if(isMilk){
+      driedTitle.textContent = 'Laudo microbiológico do lote';
+      driedSummary.textContent = (early ? '' : 'A amostra secou.\n') + buildLaudo();
+      restartBtn.textContent = 'Analisar novo lote';
+    } else {
+      const totalCaught = Object.values(caughtLog).reduce((a,b)=>a+b,0);
+      const distinct = Object.keys(caughtLog).length;
+      driedTitle.textContent = 'A lâmina secou';
+      driedSummary.textContent = `Coletados: ${totalCaught} espécimes · ${distinct}/${SPECIES.length} espécies catalogadas.`;
+      restartBtn.textContent = 'Nova lâmina';
+    }
     driedOverlay.classList.add('show');
   }
 
-  // ---- slide switching: fresh drop of the chosen sample (soil / water) ----
+  // Quality-control report for the milk lot: what was found, the risk, what
+  // each problem microbe points to at the farm/plant, and finally the lot's
+  // real (hidden) condition — so the player can check their own diagnosis.
+  const RISK_TEXT = {
+    'ALTO': 'Risco ALTO — patógenos detectados: o leite não pode ser consumido cru e a origem da contaminação precisa ser investigada.',
+    'MODERADO': 'Risco MODERADO — só deteriorantes: não costumam causar doença, mas reduzem a validade e a qualidade do produto.',
+    'BAIXO': 'Risco BAIXO — apenas microrganismos benéficos: lote aprovado para o processamento.',
+    'sem dados': 'Laudo inconclusivo — nenhuma amostra foi coletada.'
+  };
+  function buildLaudo(){
+    const { lot, number, caught } = milkSession;
+    const c = milkCounts(), risk = milkRisk(c);
+    const total = c.benefica + c.deteriorante + c.patogenica;
+    const found = Object.keys(caught).map(id => SPECIES_BY_ID[id]);
+    const lines = [
+      `Lote nº ${number} · ${total} coleta${total === 1 ? '' : 's'}`,
+      `Benéficas ${c.benefica} · Deteriorantes ${c.deteriorante} · Patogênicas ${c.patogenica}`,
+      '',
+      RISK_TEXT[risk.level]
+    ];
+    const good = found.filter(sp => sp.health === 'benefica');
+    if(good.length) lines.push('', `Fermentos e probióticos: ${good.map(sp => sp.displayName).join(', ')}.`);
+    const bad = found.filter(sp => sp.health !== 'benefica');
+    if(bad.length){
+      lines.push('', 'Achados:');
+      bad.forEach(sp => lines.push(`${HEALTH_INFO[sp.health].icon} ${sp.displayName} — ${sp.finding}`));
+    }
+    lines.push('', `Situação real do lote: ${lot.diagnosis}`);
+    if(lot.key.length){
+      lines.push(lot.key.some(id => caught[id])
+        ? '✓ Seu laudo encontrou o agente principal do problema.'
+        : `✗ O agente principal deste lote (${lot.key.map(id => SPECIES_BY_ID[id].displayName).join(' / ')}) não foi coletado.`);
+    } else {
+      lines.push(total >= 3
+        ? '✓ Laudo coerente: nenhum patógeno neste lote.'
+        : 'Poucas coletas para um laudo confiável — colete ao menos 3 amostras.');
+    }
+    return lines.join('\n');
+  }
+
+  laudoBtn.addEventListener('click', ()=>{
+    if(currentSlide === 'milk' && !gameOver) endGame(true);
+  });
+
+  // ---- slide switching: fresh drop of the chosen sample (soil / water / milk) ----
   // The collection (caughtLog, containers, discovered list) is kept across
-  // slides — you're building one specimen catalogue from both samples.
+  // slides — you're building one specimen catalogue from every sample. Each
+  // milk slide is a new lot, with its own analysis and report.
   const slideEl = document.getElementById('slide');
   const labelTape = document.getElementById('label-tape');
   const hudSlideName = document.getElementById('hud-slide-name');
@@ -3879,9 +4611,13 @@ Organism.DEATH_TIME = 1.8;
     driedOverlay.classList.remove('show');
     // re-skin the slide
     const info = SLIDE_INFO[slide];
+    if(slide === 'milk') newMilkLot();
     slideEl.classList.toggle('soil', slide==='soil');
+    slideEl.classList.toggle('milk', slide==='milk');
+    document.body.classList.toggle('slide-milk', slide==='milk');
     labelTape.textContent = info.label;
-    hudSlideName.textContent = slide==='soil' ? 'solo úmido' : 'água de lagoa';
+    hudSlideName.textContent = info.hud;
+    hudDryLabel.textContent = `${info.liquid} restante`;
     info.tint.forEach((col,i)=> wetTintStops[i].setAttribute('stop-color', col));
     slideBtns.forEach(b=> b.classList.toggle('active', b.dataset.slide===slide));
     buildDebris(slide);
@@ -3890,7 +4626,8 @@ Organism.DEATH_TIME = 1.8;
     spawnCheckTimer = 0.2;
     camera.x = CENTER.x - VIEW_W/2; camera.y = CENTER.y - VIEW_H/2;
     clampCamera(); applyViewBox();
-    showToast(info.label, false);
+    updateMilkHud();
+    showToast(slide === 'milk' ? `${info.label} · lote nº ${milkSession.number}` : info.label, false);
   }
   slideBtns.forEach(b=> b.addEventListener('click', ()=> switchSlide(b.dataset.slide)));
 
