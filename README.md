@@ -1,0 +1,2 @@
+O nosso trabalho para a feira de ciências se baseia em uma área específica da educação que no caso é a biologia, onde a proposta é criar um site em que simula um microscópio e o objetivo é capturar essas formas de vida. 
+Em geral o site é como se fosse um minigame onde o intuito é ensinar sobre as formas de vida microscópicas. O porquê desse projeto pela falta de uso dessa ferramenta no nosso ensino além de ser mais flexível para os alunos usarem é mais rápido e mais intuitivo.
