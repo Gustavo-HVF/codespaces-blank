@@ -599,6 +599,66 @@
   .reel-slot.rarity-raro::before{ background:#8e44ad; }
   .reel-slot.rarity-lendario::before{ background:#c9a227; }
 
+  /* ================= LAB: culture plates + white analysis plane ================= */
+  .lab{ position:fixed; inset:0; z-index:150; display:none; flex-direction:column; background:#fff; color:#111;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .lab.open{ display:flex; }
+  .lab-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 16px; border-bottom:2px solid #111; }
+  .lab-tab, .lab-close, .lab-tool{
+    padding:8px 14px; border:1.5px solid #111; border-radius:6px; background:#fff; color:#111; cursor:pointer;
+    font:inherit; font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .lab-tab:hover, .lab-close:hover, .lab-tool:hover{ background:#f2f2f2; }
+  .lab-tab.active{ background:#111; color:#fff; }
+  .lab-close{ margin-left:auto; }
+  .lab-page{ flex:1; min-height:0; display:none; }
+  .lab-page.active{ display:flex; }
+  #lab-plates{ flex-direction:column; overflow-y:auto; padding:14px 24px 32px; }
+  .lab-hint{ margin:0 0 18px; font-size:.8rem; color:#555; max-width:720px; line-height:1.5; }
+  .plates-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:26px 22px; }
+  .plates-empty{ grid-column:1/-1; color:#6b6b6b; font-size:.85rem; padding:40px 0; text-align:center; }
+  .dish-card{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:0; border:0; background:none;
+              color:inherit; font:inherit; cursor:pointer; }
+  .dish-name .hdot, .an-item .hdot{ display:block; width:7px; height:7px; border-radius:50%; flex:none; }
+  .an-item .hdot{ margin-left:auto; }
+  .dish-card svg{ width:100%; max-width:210px; aspect-ratio:1; display:block; overflow:visible; transition:transform .15s ease; }
+  .dish-card:hover svg{ transform:scale(1.03); }
+  .dish-name{ display:flex; align-items:center; gap:6px; font-size:.82rem; font-weight:700; color:var(--rar, #111); }
+  .dish-sub{ font-size:.68rem; color:#6b6b6b; font-style:italic; }
+  .dish-count{ font-size:.64rem; color:#888; }
+  #lab-analysis{ flex-direction:row; }
+  .an-list{ width:210px; flex:none; overflow-y:auto; border-right:1px solid #e3e3e3; padding:6px 0 16px; }
+  .an-item{ display:flex; align-items:center; gap:8px; width:100%; padding:6px 14px; border:0; background:none;
+            text-align:left; cursor:pointer; font:inherit; font-size:.76rem; color:var(--rar, #111); }
+  .an-item svg{ width:16px; height:16px; flex:none; fill:none; stroke:var(--rar, #111); color:var(--rar, #111); stroke-width:1.1;
+                stroke-linecap:round; stroke-linejoin:round; }
+  .an-item .hdot{ display:block; }
+  .an-item:hover{ background:#f5f5f5; }
+  .an-item.active{ background:#ececec; font-weight:700; }
+  .an-item:disabled{ color:#c4c4c4; cursor:not-allowed; background:none; }
+  .an-item:disabled svg{ stroke:#d4d4d4; color:#d4d4d4; }
+  .an-stage{ flex:1; position:relative; min-width:0; background:#fff; }
+  #an-svg{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:crosshair; }
+  .an-empty{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center;
+             padding:24px; color:#6b6b6b; font-size:.9rem; }
+  .an-empty.show{ display:flex; }
+  .an-tools{ position:absolute; left:16px; bottom:16px; display:flex; gap:8px; }
+  .lab-tool{ min-width:38px; padding:8px 0; font-size:.9rem; }
+  .lab-tool.wide{ padding:8px 14px; font-size:.7rem; }
+  .an-help{ position:absolute; right:16px; bottom:22px; font-size:.68rem; color:#9a9a9a; }
+  .an-info{ width:330px; flex:none; overflow-y:auto; border-left:1px solid #e3e3e3; padding:18px 20px 28px; }
+  .an-info h2{ margin:0; font-size:1.3rem; }
+  .an-info .an-sci{ margin:3px 0 10px; font-style:italic; color:#555; font-size:.82rem; }
+  .an-info .an-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .an-info .rarity-tag{ margin-top:0; }
+  .an-info .health-tag{ margin:0; }
+  @media (max-width: 900px){
+    #lab-analysis{ flex-direction:column; overflow-y:auto; }
+    .an-list{ width:auto; max-height:150px; border-right:0; border-bottom:1px solid #e3e3e3; }
+    .an-stage{ min-height:320px; }
+    .an-info{ width:auto; border-left:0; border-top:1px solid #e3e3e3; }
+  }
+
   /* ================= GLASS PIPETTE (follows the pointer over the slide) ================= */
   /* drawn as SVG so it can be long, see-through and animated; the system
      cursor is hidden only where the pipette is shown, and only for a mouse/pen */
@@ -623,6 +683,8 @@
     do organismo, abrir a página dele na Wikipedia ou <b>soltá-lo de volta</b> na lâmina.
     Os bichos se dividem ao vivo, alguns comem outros, e quanto mais raro, mais colorido:
     <b>preto</b> comum, <b>verde</b> incomum, <b>roxo</b> raro, <b>dourado</b> lendário.
+    No <b>laboratório</b> (painel Coleção), cada espécie coletada ganha uma <b>placa de cultura</b>
+    e pode ser estudada sozinha no <b>plano de análise</b>, um campo todo branco.
     A gota evapora com o tempo (dá para pausar).
   </div>
   <button id="start-btn" class="mono">Colocar a lâmina</button>
@@ -809,6 +871,8 @@
       <div class="hud-group-head"><span class="caret">▶</span>Coleção</div>
       <div class="hud-group-body">
         <div class="hud-row"><span>catalogados</span><span id="hud-org-count">0/0</span></div>
+        <button id="open-plates" class="laudo-btn">Placas de cultura</button>
+        <button id="open-analysis" class="laudo-btn">Plano de análise</button>
       </div>
     </div>
     <div class="hud-group open" data-group="catching">
@@ -825,6 +889,34 @@
         <button id="dry-pause-btn" class="laudo-btn" aria-pressed="false">Pausar secagem</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- LAB: culture plates (one petri dish per isolated species) and the
+     white analysis plane (pick any collected species to study it alone) -->
+<div id="lab" class="lab" aria-hidden="true">
+  <div class="lab-bar">
+    <button class="lab-tab" data-lab="plates">Placas de cultura</button>
+    <button class="lab-tab" data-lab="analysis">Plano de análise</button>
+    <button id="lab-close" class="lab-close">Voltar ao microscópio ✕</button>
+  </div>
+  <div id="lab-plates" class="lab-page">
+    <p class="lab-hint">Cada espécie que você coleta é isolada na sua própria placa de Petri, onde a cultura cresce sozinha. Clique numa placa para analisá-la no plano branco.</p>
+    <div id="plates-grid" class="plates-grid"></div>
+  </div>
+  <div id="lab-analysis" class="lab-page">
+    <aside id="an-list" class="an-list" aria-label="Escolha o organismo"></aside>
+    <div class="an-stage">
+      <svg id="an-svg" preserveAspectRatio="xMidYMid meet"></svg>
+      <div id="an-empty" class="an-empty">Colete um espécime na lâmina para analisá-lo aqui.</div>
+      <div class="an-tools">
+        <button id="an-zoom-out" class="lab-tool" title="Afastar">−</button>
+        <button id="an-zoom-in" class="lab-tool" title="Aproximar">+</button>
+        <button id="an-pause" class="lab-tool wide">Pausar</button>
+      </div>
+      <div class="an-help">clique no campo para cutucar</div>
+    </div>
+    <aside id="an-info" class="an-info"></aside>
   </div>
 </div>
 
@@ -858,6 +950,7 @@
         <div class="stat-row"><span>Habitat</span><span id="panel-habitat"></span></div>
         <div class="stat-row"><span>Capturados</span><span id="panel-caught-count"></span></div>
       </div>
+      <button id="panel-analyze" class="release-btn">Analisar no plano branco</button>
       <button id="panel-release" class="release-btn">Soltar na lâmina</button>
       <a id="panel-wiki" class="wiki-btn mono" href="#" target="_blank" rel="noopener noreferrer">Ver na Wikipedia ↗</a>
     </div>
@@ -4170,6 +4263,7 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
   const organisms = [];
   const caughtLog = {};
   const discoveredShapes = new Set();
+  const discoveredIds = new Set(); // same, by species id (insertion order = order of discovery)
 
   function speciesForDepth(depth){ return SPECIES.filter(s => s.depth === depth && s.habitat.includes(currentSlide)); }
 
@@ -4419,6 +4513,7 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
   });
 
   function markShapeDiscovered(species){
+    discoveredIds.add(species.id);
     const label = species.displayName;
     if(!label || discoveredShapes.has(label)) return;
     discoveredShapes.add(label);
@@ -4958,6 +5053,7 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
   }
 
   // ---- species detail panel ----
+  const HABITAT_LABEL = { soil:'solo', water:'água doce', milk:'leite (laticínios)' };
   let panelSpecies = null;
   function openSpeciesPanel(species){
     panelSpecies = species;
@@ -4966,7 +5062,6 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     document.getElementById('panel-common-name').textContent = species.displayName;
     document.getElementById('panel-sci-name').textContent = species.sciName;
     document.getElementById('panel-real').textContent = species.commonName;
-    const HABITAT_LABEL = { soil:'solo', water:'água doce', milk:'leite (laticínios)' };
     document.getElementById('panel-habitat').textContent =
       species.habitat.map(h => HABITAT_LABEL[h] || h).join(' · ');
     // health verdict + dairy role + Gram: only the milk microbes carry these
@@ -5218,6 +5313,288 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     switchSlide(currentSlide);
   });
 
+  // ================= LAB: culture plates + white analysis plane =================
+  // Opening the lab pauses the slide (drying, spawning, everything). Each
+  // collected species is isolated in a Culture: a small population living
+  // inside its own boundary — a petri dish, or the white analysis field —
+  // with its own clock; in a dish it grows by division until the plate is full.
+  const labEl = document.getElementById('lab');
+  const platesGrid = document.getElementById('plates-grid');
+  const anList = document.getElementById('an-list');
+  const anSvg = document.getElementById('an-svg');
+  const anEmpty = document.getElementById('an-empty');
+  const anInfo = document.getElementById('an-info');
+  const anPauseBtn = document.getElementById('an-pause');
+  let labOpen = false, labPage = 'plates', labLastT = null, labLoopRunning = false;
+  let analysis = null, anPaused = false; // analysis = { species, culture, zoom, ripples }
+  const dishCultures = new Map();        // species id -> Culture (kept while the page is open)
+  const ANIMALS = ['nematode-worm','segmented-worm','rotifer-crown','tardigrade','medusa-bell'];
+  const RODS = ['bacillus','bacillus-chain','vibrio','spirillum','spirochete'];
+
+  const agarGrad = el('radialGradient', { id:'agar-grad', cx:'50%', cy:'45%', r:'55%' });
+  [['0%','#ffffff'],['75%','#f3f5f6'],['100%','#e3e7ea']].forEach(([o,c])=> agarGrad.appendChild(el('stop', { offset:o, 'stop-color':c })));
+  defs.appendChild(agarGrad);
+
+  class Culture {
+    // opts: shape 'dish' (circle of radius R) or 'field' (w x h), centred on
+    // 0,0; cap = how many individuals it grows to (0 = no growth); start
+    constructor(species, root, opts){
+      this.species = species; this.root = root; this.orgs = [];
+      Object.assign(this, opts);
+      this.growT = 1.5 + Math.random()*2;
+      this.paused = false; this.visible = true;
+      for(let i=0;i<(opts.start || 0);i++) this.add(null);
+    }
+    inside(x, y, m){
+      return this.shape === 'dish' ? (x*x + y*y < (this.R*m)*(this.R*m))
+                                   : (Math.abs(x) < this.w/2*m && Math.abs(y) < this.h/2*m);
+    }
+    randomPoint(){
+      if(this.shape === 'dish'){ const a = Math.random()*Math.PI*2, r = Math.sqrt(Math.random())*this.R*0.8; return [Math.cos(a)*r, Math.sin(a)*r]; }
+      return [(Math.random()-0.5)*this.w*0.8, (Math.random()-0.5)*this.h*0.8];
+    }
+    // a new individual: splits off a parent cell (binary fission), or —
+    // for animals, or with no parent — just appears somewhere and fades in
+    add(parent){
+      const sp = this.species;
+      const o = new Organism(sp, 10, 10);
+      if(parent){
+        o.x = parent.x; o.y = parent.y; o.spawnFade = 1;
+        o.angle = o.displayAngle = parent.displayAngle;
+        const rod = RODS.includes(sp.shape);
+        const axis = parent.displayAngle + (rod ? 0 : Math.PI/2);
+        const dist = rod ? sp.length*1.05 : sp.width*1.1;
+        parent._split = { t:0, dir:1, axis, dist };
+        o._split = { t:0, dir:-1, axis, dist };
+      } else {
+        [o.x, o.y] = this.randomPoint();
+        o.angle = o.displayAngle = Math.random()*Math.PI*2;
+        o.spawnFade = 0;
+      }
+      this.root.appendChild(o.group);
+      this.orgs.push(o);
+      return o;
+    }
+    step(dt){
+      if(this.paused || !this.visible) return;
+      const bounds = { cx:0, cy:0, isInside:(x,y)=> this.inside(x,y,1), isInsideMargin:(x,y,m)=> this.inside(x,y,m) };
+      this.orgs.forEach(o=>{
+        o.update(dt, bounds);
+        // drifters (and anything that got pushed out) are kept inside
+        if(!this.inside(o.x, o.y, 0.97)){
+          if(this.shape === 'dish'){ const k = this.R*0.95/(Math.hypot(o.x, o.y) || 1); o.x *= k; o.y *= k; }
+          else { o.x = Math.max(-this.w*0.48, Math.min(this.w*0.48, o.x)); o.y = Math.max(-this.h*0.48, Math.min(this.h*0.48, o.y)); }
+          o.angle = Math.atan2(-o.y, -o.x) + (Math.random()-0.5)*0.8;
+        }
+        o.render(dt);
+      });
+      if(this.cap && this.orgs.length < this.cap){
+        this.growT -= dt;
+        if(this.growT <= 0){
+          // a sparse plate grows fast; it slows down as the plate fills up
+          this.growT = this.orgs.length < this.cap/2 ? 2 + Math.random()*3 : 4 + Math.random()*5;
+          const free = this.orgs.filter(o=> !o._split);
+          if(ANIMALS.includes(this.species.shape) || !free.length) this.add(null);
+          else this.add(free[Math.floor(Math.random()*free.length)]);
+        }
+      }
+      if(this.onCount) this.onCount(this.orgs.length);
+    }
+    clear(){ this.orgs.forEach(o=> o.group.remove()); this.orgs = []; }
+  }
+
+  // ---- culture plates ----
+  function cultureCap(sp){ const L = Math.max(sp.length, sp.width); return L <= 20 ? 10 : L <= 45 ? 6 : 3; }
+  const dishObserver = ('IntersectionObserver' in window)
+    ? new IntersectionObserver(entries=> entries.forEach(en=>{ if(en.target._culture) en.target._culture.visible = en.isIntersecting; }),
+                               { root: document.getElementById('lab-plates') })
+    : null;
+  let dishSeq = 0;
+  function makeDish(sp){
+    const R = Math.min(160, Math.max(45, Math.max(sp.length, sp.width)*3)); // big organisms get a "wider" dish
+    const pad = R*0.12;
+    const card = document.createElement('button');
+    card.className = 'dish-card';
+    card.style.setProperty('--rar', RARITY_INFO[sp.rarity].color);
+    card.title = `Analisar ${sp.displayName} no plano branco`;
+    const svg = el('svg', { viewBox:`${(-R-pad).toFixed(1)} ${(-R-pad).toFixed(1)} ${(2*(R+pad)).toFixed(1)} ${(2*(R+pad)).toFixed(1)}` });
+    const clipId = `dish-clip-${++dishSeq}`;
+    const dDefs = el('defs', {});
+    const cp = el('clipPath', { id: clipId }); cp.appendChild(el('circle', { cx:0, cy:0, r:R }));
+    dDefs.appendChild(cp); svg.appendChild(dDefs);
+    // glass lid rim, then the agar the culture lives on
+    svg.appendChild(el('circle', { cx:0, cy:0, r:(R+pad*0.55).toFixed(1), fill:'#fbfcfd', stroke:'#b9bfc5', 'stroke-width':1.6, 'vector-effect':'non-scaling-stroke' }));
+    svg.appendChild(el('circle', { cx:0, cy:0, r:R, fill:'url(#agar-grad)', stroke:'#d3d8dc', 'stroke-width':1.2, 'vector-effect':'non-scaling-stroke' }));
+    const root = el('g', { 'clip-path':`url(#${clipId})` });
+    svg.appendChild(root);
+    svg.appendChild(el('path', { d:`M ${(-R*0.74).toFixed(1)} ${(-R*0.46).toFixed(1)} A ${(R*0.88).toFixed(1)} ${(R*0.88).toFixed(1)} 0 0 1 ${(-R*0.2).toFixed(1)} ${(-R*0.85).toFixed(1)}`,
+      fill:'none', stroke:'#ffffff', 'stroke-width':3, 'stroke-linecap':'round', opacity:0.9, 'vector-effect':'non-scaling-stroke' }));
+    card.appendChild(svg);
+    const name = document.createElement('span'); name.className = 'dish-name'; name.textContent = sp.displayName;
+    if(sp.health){ const dot = document.createElement('i'); dot.className = `hdot ${sp.health}`; name.appendChild(dot); }
+    const sub = document.createElement('span'); sub.className = 'dish-sub'; sub.textContent = sp.sciName;
+    const count = document.createElement('span'); count.className = 'dish-count';
+    card.append(name, sub, count);
+    const cap = cultureCap(sp);
+    const c = new Culture(sp, root, { shape:'dish', R, cap, start: Math.min(cap, Math.max(2, caughtLog[sp.id] || 0)) });
+    c.card = card; card._culture = c;
+    c.onCount = n=>{ if(c._n !== n){ c._n = n; count.textContent = `${n} ${n === 1 ? 'indivíduo' : 'indivíduos'}${n >= cap ? ' · placa cheia' : ''}`; } };
+    c.onCount(c.orgs.length);
+    card.addEventListener('click', ()=> openLab('analysis', sp.id));
+    return c;
+  }
+  function renderPlates(){
+    platesGrid.textContent = '';
+    if(!discoveredIds.size){
+      const p = document.createElement('div'); p.className = 'plates-empty';
+      p.textContent = 'Nenhuma cultura ainda — colete espécimes na lâmina para isolá-los aqui.';
+      platesGrid.appendChild(p);
+      return;
+    }
+    discoveredIds.forEach(id=>{
+      let c = dishCultures.get(id);
+      if(!c){ c = makeDish(SPECIES_BY_ID[id]); dishCultures.set(id, c); if(dishObserver) dishObserver.observe(c.card); }
+      platesGrid.appendChild(c.card);
+    });
+  }
+
+  // ---- the white analysis plane: one species, enlarged, alone ----
+  function analysisBase(sp){ return Math.max(150, Math.max(sp.length, sp.width)*6); }
+  function analysisCount(sp){ const L = Math.max(sp.length, sp.width); return L <= 20 ? 8 : L <= 45 ? 4 : 2; }
+  function fitAnalysisView(){
+    if(!analysis) return;
+    const r = anSvg.getBoundingClientRect();
+    const w = analysisBase(analysis.species) / analysis.zoom;
+    const h = w * (r.height / Math.max(1, r.width));
+    anSvg.setAttribute('viewBox', `${(-w/2).toFixed(1)} ${(-h/2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+    analysis.culture.w = w; analysis.culture.h = h;
+  }
+  function selectAnalysis(id){
+    if(analysis) analysis.culture.clear();
+    anSvg.textContent = '';
+    const sp = id && SPECIES_BY_ID[id];
+    if(!sp || !discoveredIds.has(id)){
+      analysis = null; anEmpty.classList.add('show'); anInfo.textContent = '';
+      renderAnalysisList();
+      return;
+    }
+    anEmpty.classList.remove('show');
+    const root = el('g', {}), ripples = el('g', {});
+    anSvg.appendChild(root); anSvg.appendChild(ripples);
+    analysis = { species: sp, zoom: 1, ripples, culture: new Culture(sp, root, { shape:'field', w: analysisBase(sp), h: analysisBase(sp)*0.6, cap: 0 }) };
+    fitAnalysisView();
+    for(let i=0;i<analysisCount(sp);i++) analysis.culture.add(null);
+    analysis.culture.paused = anPaused;
+    renderAnalysisList();
+    renderAnalysisInfo(sp);
+  }
+  function renderAnalysisList(){
+    anList.textContent = '';
+    let lastGroup = null;
+    railSpecies.forEach(sp=>{
+      const group = railGroup(sp) ? 'Leite · laticínios' : 'Água e solo';
+      if(group !== lastGroup){ const h = document.createElement('div'); h.className = 'rail-sub'; h.textContent = group; anList.appendChild(h); lastGroup = group; }
+      const known = discoveredIds.has(sp.id);
+      const b = document.createElement('button');
+      b.className = 'an-item' + (analysis && analysis.species === sp ? ' active' : '');
+      b.style.setProperty('--rar', RARITY_INFO[sp.rarity].color);
+      b.disabled = !known;
+      b.title = known ? `Analisar ${sp.commonName}` : 'Colete na lâmina para desbloquear';
+      b.innerHTML = `<svg viewBox="0 0 16 16">${SHAPE_ICONS[sp.displayName] || '<circle cx="8" cy="8" r="3"/>'}</svg>`;
+      const label = document.createElement('span'); label.textContent = sp.displayName; b.appendChild(label);
+      if(sp.health && known){ const dot = document.createElement('i'); dot.className = `hdot ${sp.health}`; b.appendChild(dot); }
+      b.addEventListener('click', ()=> selectAnalysis(sp.id));
+      anList.appendChild(b);
+    });
+  }
+  function renderAnalysisInfo(sp){
+    anInfo.textContent = '';
+    const add = (tag, cls, text)=>{ const n = document.createElement(tag); if(cls) n.className = cls; if(text !== undefined) n.textContent = text; anInfo.appendChild(n); return n; };
+    add('h2', '', sp.displayName);
+    add('p', 'an-sci', sp.sciName);
+    const tags = add('div', 'an-tags');
+    const rt = document.createElement('span'); rt.className = 'rarity-tag'; rt.textContent = RARITY_INFO[sp.rarity].label; rt.style.color = RARITY_INFO[sp.rarity].color;
+    tags.appendChild(rt);
+    if(sp.health){ const ht = document.createElement('span'); ht.className = `health-tag ${sp.health}`; ht.textContent = `${HEALTH_INFO[sp.health].icon} ${HEALTH_INFO[sp.health].label}`; tags.appendChild(ht); }
+    const section = (title, text)=>{ if(!text) return; const sec = add('div', 'panel-section'); const h = document.createElement('h4'); h.textContent = title; const p = document.createElement('p'); p.textContent = text; sec.append(h, p); };
+    section('DESCRIÇÃO', sp.desc);
+    section('COMPORTAMENTO OBSERVADO', sp.behavior);
+    section('SAÚDE HUMANA', sp.healthNote);
+    section('NA INDÚSTRIA DE LATICÍNIOS', sp.industry);
+    const stats = add('div', 'panel-section');
+    const row = (k, v)=>{ if(!v) return; const d = document.createElement('div'); d.className = 'stat-row'; const a = document.createElement('span'); a.textContent = k; const b = document.createElement('span'); b.textContent = v; d.append(a, b); stats.appendChild(d); };
+    row('Organismo real', sp.commonName);
+    row('Coloração de Gram', sp.gram);
+    row('Forma', sp.shapeLabel || shapeLabel(sp.shape));
+    row('Motilidade', motilityLabel(sp.motility));
+    row('Plano focal', DEPTH_INFO[sp.depth]);
+    row('Habitat', sp.habitat.map(h => HABITAT_LABEL[h] || h).join(' · '));
+    row('Nos frascos', String(caughtLog[sp.id] || 0));
+    const wiki = add('a', 'wiki-btn', `Ver "${sp.commonName}" na Wikipedia ↗`);
+    wiki.href = wikipediaUrl(sp); wiki.target = '_blank'; wiki.rel = 'noopener noreferrer';
+  }
+  // clicking the white field pokes the water there: ripple + startle
+  anSvg.addEventListener('pointerdown', (e)=>{
+    if(!analysis) return;
+    const pt = anSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(anSvg.getScreenCTM().inverse());
+    const w = analysis.culture.w;
+    const ring = el('circle', { cx:p.x.toFixed(1), cy:p.y.toFixed(1), r:1, fill:'none', stroke:'#7d8878', 'stroke-width':1.4, opacity:0.6, 'vector-effect':'non-scaling-stroke' });
+    analysis.ripples.appendChild(ring);
+    ring.animate([{ r: w*0.005, opacity:0.6 }, { r: w*0.08, opacity:0 }], { duration:900, easing:'cubic-bezier(.2,.6,.3,1)' }).onfinish = ()=> ring.remove();
+    analysis.culture.orgs.forEach(o=>{ if(Math.hypot(o.x - p.x, o.y - p.y) < w*0.12) o.triggerFlee(p.x, p.y); });
+  });
+  document.getElementById('an-zoom-in').addEventListener('click', ()=>{ if(analysis){ analysis.zoom = Math.min(4, analysis.zoom*1.25); fitAnalysisView(); } });
+  document.getElementById('an-zoom-out').addEventListener('click', ()=>{ if(analysis){ analysis.zoom = Math.max(0.5, analysis.zoom/1.25); fitAnalysisView(); } });
+  anPauseBtn.addEventListener('click', ()=>{
+    anPaused = !anPaused;
+    anPauseBtn.textContent = anPaused ? 'Continuar' : 'Pausar';
+    if(analysis) analysis.culture.paused = anPaused;
+  });
+
+  // ---- opening / closing the lab ----
+  function setLabPage(page){
+    labPage = page;
+    labEl.querySelectorAll('.lab-tab').forEach(t=> t.classList.toggle('active', t.dataset.lab === page));
+    document.getElementById('lab-plates').classList.toggle('active', page === 'plates');
+    document.getElementById('lab-analysis').classList.toggle('active', page === 'analysis');
+  }
+  function openLab(page, speciesId){
+    if(holding){
+      holding.suction = false; holding = null; captureProgress.style.display = 'none';
+      window.removeEventListener('pointermove', onHoldMove);
+      window.removeEventListener('pointerup', onHoldEnd);
+    }
+    panelOverlay.classList.remove('open');
+    labOpen = true;
+    labEl.classList.add('open'); labEl.setAttribute('aria-hidden', 'false');
+    setLabPage(page);
+    if(page === 'plates') renderPlates();
+    else selectAnalysis(speciesId || (analysis && analysis.species.id) || discoveredIds.values().next().value);
+    if(!labLoopRunning){ labLoopRunning = true; labLastT = null; requestAnimationFrame(labLoop); }
+  }
+  function closeLab(){
+    labOpen = false;
+    labEl.classList.remove('open'); labEl.setAttribute('aria-hidden', 'true');
+  }
+  function labLoop(now){
+    if(!labOpen){ labLoopRunning = false; return; }
+    const dt = labLastT === null ? 0.016 : Math.min(0.05, (now - labLastT)/1000);
+    labLastT = now;
+    if(labPage === 'plates') dishCultures.forEach(c=> c.step(dt));
+    else if(analysis) analysis.culture.step(dt);
+    requestAnimationFrame(labLoop);
+  }
+  document.getElementById('open-plates').addEventListener('click', ()=> openLab('plates'));
+  document.getElementById('open-analysis').addEventListener('click', ()=> openLab('analysis'));
+  document.getElementById('panel-analyze').addEventListener('click', ()=>{ if(panelSpecies) openLab('analysis', panelSpecies.id); });
+  labEl.querySelectorAll('.lab-tab').forEach(t=> t.addEventListener('click', ()=> openLab(t.dataset.lab)));
+  document.getElementById('lab-close').addEventListener('click', closeLab);
+  window.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && labOpen && !panelOverlay.classList.contains('open')) closeLab();
+  });
+  window.addEventListener('resize', ()=>{ if(labOpen && labPage === 'analysis') fitAnalysisView(); });
+
   // ---- main loop ----
   let lastT = null;
   function loop(now){
@@ -5225,8 +5602,8 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     const dt = Math.min(0.05, Math.max(0, (now-lastT)/1000));
     lastT = now;
     simTime += dt;
-    updateCameraKeys(dt);
-    if(!gameOver){
+    if(!labOpen) updateCameraKeys(dt);
+    if(!gameOver && !labOpen){
       updateDrying(dt);
       maybeSpawnInView(dt);
       const bounds = {
