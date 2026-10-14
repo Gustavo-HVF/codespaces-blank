@@ -399,7 +399,7 @@
   .species-toggle[aria-expanded="true"] .burger i:nth-child(3){ transform: translateY(-5px) rotate(-45deg); }
   .st-label{ flex:1; text-align:left; }
   .st-count{ color:var(--ink); letter-spacing:.04em; }
-  #shape-list{ overflow:hidden; max-height:1400px; transition: max-height .35s ease, opacity .25s ease; }
+  #shape-list{ overflow:hidden; max-height:2400px; transition: max-height .35s ease, opacity .25s ease; }
   #shape-list.collapsed{ max-height:0; opacity:0; }
 
   /* ---- right panel hide/show ---- */
@@ -580,6 +580,24 @@
     font-family:inherit; font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
   }
   .laudo-btn:hover{ background:#f2f2f2; }
+  .release-btn{
+    display:block; width:100%; margin-top:6px; padding:11px 0; cursor:pointer;
+    background:#fff; color:#111; border:2px solid #111; border-radius:6px;
+    font-family:inherit; font-size:.74rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .release-btn:hover{ background:#f2f2f2; }
+
+  /* ================= RARITY COLOURS (common black, uncommon green, rare purple, legendary gold) ================= */
+  .rail-rarity{ display:flex; align-items:center; gap:6px; padding:6px 16px 2px; font-size:.56rem; font-weight:700;
+                letter-spacing:.12em; text-transform:uppercase; color:var(--rar); }
+  .rail-rarity::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--rar); }
+  #shape-list .shape-entry .sw{ stroke:var(--rar, #111); color:var(--rar, #111); opacity:.35; }
+  #shape-list .shape-entry.discovered .sw{ opacity:1; }
+  #shape-list .shape-entry.discovered span{ color:var(--rar, #111); }
+  .reel-slot.rarity-incomum, .reel-slot.rarity-raro, .reel-slot.rarity-lendario{ border-color:#111; }
+  .reel-slot.rarity-incomum::before{ background:#2e8b57; }
+  .reel-slot.rarity-raro::before{ background:#8e44ad; }
+  .reel-slot.rarity-lendario::before{ background:#c9a227; }
 
   /* ================= GLASS PIPETTE (follows the pointer over the slide) ================= */
   /* drawn as SVG so it can be long, see-through and animated; the system
@@ -602,7 +620,10 @@
     com a <b>pipeta</b> sobre ele por <b>5 segundos</b>. No leite, cada bactéria coletada é
     classificada como <b>benéfica</b>, <b>deteriorante</b> ou <b>patogênica</b> para a saúde
     humana, e o lote recebe um laudo de risco. Clique num recipiente para ver a ficha
-    do organismo e abrir a página dele na Wikipedia. A gota evapora com o tempo.
+    do organismo, abrir a página dele na Wikipedia ou <b>soltá-lo de volta</b> na lâmina.
+    Os bichos se dividem ao vivo, alguns comem outros, e quanto mais raro, mais colorido:
+    <b>preto</b> comum, <b>verde</b> incomum, <b>roxo</b> raro, <b>dourado</b> lendário.
+    A gota evapora com o tempo (dá para pausar).
   </div>
   <button id="start-btn" class="mono">Colocar a lâmina</button>
 </div>
@@ -616,12 +637,12 @@
       <div class="ctrl"><svg class="ctrl-ico" viewBox="0 0 28 40"><rect x="2" y="2" width="24" height="36" rx="12" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14 2v14M2 16h24" stroke="currentColor" stroke-width="1.2"/><rect x="11.5" y="6" width="5" height="8" rx="2.5" fill="#111"/><path d="M14 18.5v6m-2.2-2.2 2.2 2.2 2.2-2.2" stroke="#111" stroke-width="1.3" fill="none"/></svg><div class="ctrl-txt"><b>Rolar</b><span>ajustar o foco</span></div></div>
       <div class="ctrl"><svg class="ctrl-ico wide" viewBox="0 0 48 30"><rect x="17" y="1" width="14" height="13" rx="2.5" fill="#fff" stroke="currentColor" stroke-width="1.2"/><path d="M7 3.5l3.6 4.8H3.4z" fill="#111" transform="translate(17,1)"/><rect x="1" y="16" width="14" height="13" rx="2.5" fill="#fff" stroke="currentColor" stroke-width="1.2"/><path d="M3.2 6.5l4.8-3.6v7.2z" fill="#111" transform="translate(1,16)"/><rect x="17" y="16" width="14" height="13" rx="2.5" fill="#fff" stroke="currentColor" stroke-width="1.2"/><path d="M7 9.5l3.6-4.8H3.4z" fill="#111" transform="translate(17,16)"/><rect x="33" y="16" width="14" height="13" rx="2.5" fill="#fff" stroke="currentColor" stroke-width="1.2"/><path d="M10.8 6.5L6 2.9v7.2z" fill="#111" transform="translate(33,16)"/></svg><div class="ctrl-txt"><b>Setas / WASD</b><span>mover a lâmina</span></div></div>
       <div class="ctrl"><svg class="ctrl-ico wide" viewBox="0 0 48 16"><rect x="1" y="1" width="10" height="13" rx="2" fill="#fff" stroke="currentColor" stroke-width="1.1"/><text x="6" y="11" text-anchor="middle" font-size="8" font-family="monospace" fill="#111">1</text><rect x="13" y="1" width="10" height="13" rx="2" fill="#fff" stroke="currentColor" stroke-width="1.1"/><text x="18" y="11" text-anchor="middle" font-size="8" font-family="monospace" fill="#111">2</text><rect x="25" y="1" width="10" height="13" rx="2" fill="#fff" stroke="currentColor" stroke-width="1.1"/><text x="30" y="11" text-anchor="middle" font-size="8" font-family="monospace" fill="#111">3</text><rect x="37" y="1" width="10" height="13" rx="2" fill="#fff" stroke="currentColor" stroke-width="1.1"/><text x="42" y="11" text-anchor="middle" font-size="8" font-family="monospace" fill="#111">4</text></svg><div class="ctrl-txt"><b>1 – 4</b><span>ir direto ao plano</span></div></div>
-      <div class="ctrl"><svg class="ctrl-ico" viewBox="0 0 24 40"><rect x="5" y="2" width="14" height="5" rx="1.2" fill="#7a5a36"/><path d="M6 7h12v25a6 6 0 0 1-12 0z" fill="rgba(160,190,170,.18)" stroke="currentColor" stroke-width="1.3"/><path d="M6.6 17h10.8v15a5.4 5.4 0 0 1-10.8 0z" fill="rgba(140,175,150,.45)"/><ellipse cx="12" cy="26" rx="3.4" ry="1.8" fill="#111" opacity=".8"/></svg><div class="ctrl-txt"><b>Clicar no frasco</b><span>ficha + Wikipedia</span></div></div>
+      <div class="ctrl"><svg class="ctrl-ico" viewBox="0 0 24 40"><rect x="5" y="2" width="14" height="5" rx="1.2" fill="#7a5a36"/><path d="M6 7h12v25a6 6 0 0 1-12 0z" fill="rgba(160,190,170,.18)" stroke="currentColor" stroke-width="1.3"/><path d="M6.6 17h10.8v15a5.4 5.4 0 0 1-10.8 0z" fill="rgba(140,175,150,.45)"/><ellipse cx="12" cy="26" rx="3.4" ry="1.8" fill="#111" opacity=".8"/></svg><div class="ctrl-txt"><b>Clicar no frasco</b><span>ficha, Wikipedia, soltar</span></div></div>
     </div>
     <button id="species-toggle" class="species-toggle mono" aria-expanded="false" title="Mostrar espécimes">
       <span class="burger"><i></i><i></i><i></i></span>
       <span class="st-label">Espécimes</span>
-      <span id="species-count" class="st-count">0/38</span>
+      <span id="species-count" class="st-count">0/44</span>
     </button>
     <div id="shape-list" class="collapsed"></div>
   </div>
@@ -801,6 +822,7 @@
       <div class="hud-group-body">
         <div class="hud-row" id="hud-dry-row"><span id="hud-dry-label">água restante</span><span id="hud-dry-pct">100%</span></div>
         <div class="mini-bar dry"><div id="hud-dry-bar" style="width:100%"></div></div>
+        <button id="dry-pause-btn" class="laudo-btn" aria-pressed="false">Pausar secagem</button>
       </div>
     </div>
   </div>
@@ -836,6 +858,7 @@
         <div class="stat-row"><span>Habitat</span><span id="panel-habitat"></span></div>
         <div class="stat-row"><span>Capturados</span><span id="panel-caught-count"></span></div>
       </div>
+      <button id="panel-release" class="release-btn">Soltar na lâmina</button>
       <a id="panel-wiki" class="wiki-btn mono" href="#" target="_blank" rel="noopener noreferrer">Ver na Wikipedia ↗</a>
     </div>
   </div>
@@ -881,6 +904,7 @@ const SPECIES = [
     length: 26, width: 15,
     depth: 1, rarity: 'comum', habitat: ['water'],
     motility: 'cilia', speed: 1.3,
+    eats: ['bacillus', 'vibrio'],
     desc: 'Ciliado em forma de feijão/rim, comum em águas ricas em bactérias (infusões de feno), usado classicamente em laboratórios didáticos de protozoologia.',
     behavior: 'Desliza em curvas suaves, a concavidade do corpo sempre voltada para dentro da trajetória, como um feijão rolando na água.'
   },
@@ -909,6 +933,7 @@ const SPECIES = [
     length: 46, width: 22,
     depth: 1, rarity: 'incomum', habitat: ['water'],
     motility: 'cilia', speed: 1.5,
+    eats: ['bacillus', 'vibrio'],
     desc: 'Protozoário ciliado em forma de sola de sapato, um dos organismos mais estudados em biologia celular. Coberto por milhares de cílios que batem em ondas coordenadas.',
     behavior: 'Desliza suavemente girando levemente o corpo em espiral, com uma reação de esquiva característica ao tocar obstáculos: recua, gira e retoma o rumo em outra direção.'
   },
@@ -937,6 +962,7 @@ const SPECIES = [
     length: 28, width: 16,
     depth: 1, rarity: 'comum', habitat: ['water'],
     motility: 'cilia', speed: 1.4,
+    eats: ['bacillus', 'vibrio'],
     desc: 'Ciliado modelo amplamente usado em pesquisa de biologia celular e molecular (seus estudos renderam dois Prêmios Nobel). Corpo ovalado coberto uniformemente por cílios.',
     behavior: 'Nada de forma rápida e relativamente retilínea, com mudanças de direção bruscas ao colidir com obstáculos.'
   },
@@ -965,6 +991,7 @@ const SPECIES = [
     length: 58, width: 6,
     depth: 2, rarity: 'incomum', habitat: ['soil', 'water'],
     motility: 'crawl', speed: 1.1,
+    eats: ['spirillum'],
     desc: 'Verme cilíndrico microscópico, um dos grupos animais mais numerosos da Terra. Vive no filme de água entre partículas de solo, alimentando-se de bactérias.',
     behavior: 'Move-se ondulando o corpo inteiro em forma de "S" contínuo, sem apêndices — o movimento clássico de nematódeo sob a lente.'
   },
@@ -978,7 +1005,7 @@ const SPECIES = [
     color: '#d8dccf', colorDark: '#6b8253',
     length: 70, width: 10,
     depth: 2, rarity: 'comum', habitat: ['water'],
-    motility: 'brownian', speed: 0.15,
+    motility: 'brownian', speed: 0.05, turnRate: 0.15,
     desc: 'Alga verde filamentosa de água doce, famosa por seus cloroplastos dispostos em espiral dentro de cada célula do filamento — visíveis até em microscópios escolares simples.',
     behavior: 'Não possui locomoção própria; os filamentos flutuam livremente na água, movendo-se apenas com a correnteza.'
   },
@@ -1007,6 +1034,7 @@ const SPECIES = [
     length: 38, width: 11,
     depth: 3, rarity: 'incomum', habitat: ['soil', 'water'],
     motility: 'gliding', speed: 0.6,
+    divides: true,
     desc: 'Diatomácea alongada e simétrica com uma fenda central (rafe) percorrendo todo o comprimento da carapaça de sílica, usada para o deslizamento característico do grupo.',
     behavior: 'Desliza em linha reta sobre superfícies por meio de correntes citoplasmáticas na rafe, parando e invertendo a direção periodicamente.'
   },
@@ -1020,7 +1048,8 @@ const SPECIES = [
     color: '#dad3c2', colorDark: '#7b6e55',
     length: 24, width: 24,
     depth: 3, rarity: 'incomum', habitat: ['water'],
-    motility: 'brownian', speed: 0.1,
+    motility: 'brownian', speed: 0.02, turnRate: 0.15,
+    divides: true,
     desc: 'Diatomácea circular com ornamentação radial na carapaça de sílica, componente abundante do fitoplâncton de lagos e importante indicador de qualidade da água.',
     behavior: 'Sem rafe nem flagelo, não possui locomoção própria — permanece suspensa na coluna d\'água, girando lentamente com as correntes.'
   },
@@ -1035,6 +1064,7 @@ const SPECIES = [
     length: 32, width: 13,
     depth: 3, rarity: 'incomum', habitat: ['soil', 'water'],
     motility: 'gliding', speed: 0.55,
+    divides: true,
     desc: 'Diatomácea em forma de barco, um dos gêneros mais diversos e comuns entre as diatomáceas penadas, encontrada em praticamente qualquer corpo d\'água doce.',
     behavior: 'Desliza suavemente sobre o substrato em linha reta, deixando um rastro de muco, e inverte o sentido ao atingir um obstáculo.'
   },
@@ -1048,7 +1078,8 @@ const SPECIES = [
     color: '#dbd4c4', colorDark: '#7d7058',
     length: 30, width: 30,
     depth: 3, rarity: 'raro', habitat: ['water'],
-    motility: 'brownian', speed: 0.08,
+    motility: 'brownian', speed: 0.02, turnRate: 0.15,
+    divides: true,
     desc: 'Diatomácea cêntrica de carapaça triangular ornamentada, encontrada principalmente em ambientes marinhos e salobros, com registro fóssil abundante.',
     behavior: 'Imóvel por natureza, apenas deriva suspensa na água sem qualquer locomoção própria.'
   },
@@ -1076,7 +1107,7 @@ const SPECIES = [
     color: '#cdd5c0', colorDark: '#5f7150',
     length: 42, width: 36,
     depth: 3, rarity: 'raro', habitat: ['water'],
-    motility: 'brownian', speed: 0.1,
+    motility: 'brownian', speed: 0.02, turnRate: 0.15,
     desc: 'Alga desmídia de simetria radial elaborada, com o corpo dividido em dois semicélulas espelhadas e margens profundamente recortadas em lobos espinhosos.',
     behavior: 'Não possui locomoção própria; permanece praticamente parada, apenas derivando suavemente no meio líquido.'
   },
@@ -1091,6 +1122,7 @@ const SPECIES = [
     length: 26, width: 26,
     depth: 3, rarity: 'raro', habitat: ['water'],
     motility: 'crawl', speed: 0.2,
+    eats: ['chlamy'],
     desc: 'Protista esférico conhecido como "ameba-sol", com finos pseudópodes radiais rígidos (axópodes) usados tanto para captura de presas quanto para locomoção lenta.',
     behavior: 'Move-se muito lentamente rolando sobre os próprios axópodes, que também vibram para atrair e capturar pequenas presas que tocam sua superfície.'
   },
@@ -1147,6 +1179,7 @@ const SPECIES = [
     length: 40, width: 16,
     depth: 2, rarity: 'incomum', habitat: ['soil', 'water'],
     motility: 'cilia', speed: 1.2,
+    eats: ['spirillum'],
     desc: 'Animal microscópico com uma coroa de cílios na extremidade anterior (corona) que, ao bater, lembra uma roda girando — origem do nome do grupo.',
     behavior: 'Alterna entre nadar livremente, impulsionado pela corona ciliar, e se fixar temporariamente a superfícies com o "pé" posterior, esticando e contraindo o corpo.'
   },
@@ -1161,6 +1194,7 @@ const SPECIES = [
     length: 22, width: 20,
     depth: 2, rarity: 'incomum', habitat: ['water'],
     motility: 'stalked', speed: 0.05,
+    eats: ['spirillum'],
     desc: 'Ciliado séssil em forma de sino, preso a superfícies por um longo talo contrátil em espiral. A coroa de cílios ao redor da "boca" cria correntes que atraem alimento.',
     behavior: 'O corpo permanece fixo pelo talo; quando perturbado, o talo se contrai bruscamente em espiral, recolhendo o sino instantaneamente.'
   },
@@ -1179,6 +1213,97 @@ const SPECIES = [
     motility: 'crawl', speed: 0.45,
     desc: 'Animal microscópico (0,1–0,5 mm) com corpo segmentado e oito patas curtas terminadas em garras. Vive no filme de água de musgos, liquens, solo e sedimentos. É famoso pela criptobiose: ao secar, recolhe as patas e vira um "barrilzinho" (tun), sobrevivendo à desidratação, ao frio extremo, à radiação e até ao vácuo do espaço — e volta à vida ao ser reidratado.',
     behavior: 'Anda devagar e de forma desajeitada, movendo as oito patas em onda e agarrando-se aos detritos com as garras. Aqui no jogo, quando a gota seca ao redor dele, ele não morre: entra em criptobiose e fica imóvel em forma de barril.'
+  },
+  {
+    id: 'stentor',
+    displayName: 'stentor',
+    commonName: 'Stentor (trompeta)',
+    sciName: 'Stentor coeruleus',
+    wikiTitle: 'Stentor_(ciliate)',
+    shape: 'stentor-trumpet',
+    color: '#d3dfe2', colorDark: '#4c6670',
+    length: 70, width: 34,
+    depth: 2, rarity: 'incomum', habitat: ['water'],
+    motility: 'cilia', speed: 0.8,
+    eats: ['spirillum', 'rotifer'],
+    desc: 'Um dos maiores protozoários (até 2 mm esticado), em forma de trompete. Tem cílios curtos pelo corpo, mas os grandes — fundidos em membranelas — ficam só na "boca" larga da frente, girando como um redemoinho que puxa alimento. Esta espécie é azul-esverdeada por causa do pigmento estentorina, e seu núcleo parece um colar de contas.',
+    behavior: 'Nada devagar com o lado largo à frente e o corpo mole se deformando; quando é tocado ou sugado, contrai-se bruscamente numa bola. Come bactérias, algas e até rotíferos.'
+  },
+  {
+    id: 'chlamy',
+    displayName: 'chlamydomonas',
+    commonName: 'Clamidomonas',
+    sciName: 'Chlamydomonas reinhardtii',
+    wikiTitle: 'Chlamydomonas_reinhardtii',
+    shape: 'biflagellate',
+    color: '#d3dcc6', colorDark: '#56704a',
+    length: 22, width: 16,
+    depth: 3, rarity: 'raro', habitat: ['water', 'soil'],
+    motility: 'flagellate-whip', speed: 2.2,
+    divides: true,
+    desc: 'Alga verde unicelular com dois flagelos iguais na frente. Tem um único cloroplasto em forma de taça, com um pirenoide, e uma mancha ocular vermelha que detecta a luz. É um organismo-modelo para estudar flagelos e fotossíntese.',
+    behavior: 'Nadadora rápida: puxa o corpo com os dois flagelos num movimento de "nado de peito", girando sobre o próprio eixo. Quando perturbada, dispara para longe.'
+  },
+  // bactérias comuns de água e solo — aqui bem ampliadas (de verdade medem de
+  // 1 a 60 µm); são os "pretinhos" mais frequentes da amostra
+  {
+    id: 'bacillus',
+    displayName: 'bacillus',
+    commonName: 'Bacilo do feno',
+    sciName: 'Bacillus subtilis',
+    wikiTitle: 'Bacillus_subtilis',
+    shape: 'bacillus', flagella: 'peritrichous',
+    color: '#d8d6cc', colorDark: '#2e2e29',
+    length: 14, width: 5,
+    depth: 1, rarity: 'comum', habitat: ['soil', 'water'],
+    motility: 'flagella-run-tumble', speed: 1.3,
+    divides: true,
+    desc: 'Bacilo (bactéria em bastonete) dos mais comuns no solo, na poeira e na vegetação, de onde chega à água. Forma endósporos que resistem ao calor e à seca. No jogo aparece bem ampliado: na realidade mede só 2–3 µm.',
+    behavior: 'Nada em corridas retas, com vários flagelos, e dá cambalhotas para mudar de direção. Divide-se ao meio (fissão binária): em laboratório, a população pode dobrar em cerca de 20 a 30 minutos.'
+  },
+  {
+    id: 'spirillum',
+    displayName: 'spirillum',
+    commonName: 'Espirilo',
+    sciName: 'Spirillum volutans',
+    wikiTitle: 'Spirillum_volutans',
+    shape: 'spirillum', turns: 2.2,
+    color: '#d8d6cc', colorDark: '#2e2e29',
+    length: 30, width: 7,
+    depth: 2, rarity: 'comum', habitat: ['water'],
+    motility: 'flagella-smooth', speed: 1.6,
+    divides: true,
+    desc: 'Uma das maiores bactérias de água doce (até ~60 µm), em espiral rígida, com um tufo de flagelos em cada ponta. Vive em águas paradas ricas em matéria orgânica e prefere pouco oxigênio.',
+    behavior: 'Nada girando como um saca-rolhas; para mudar de rumo, inverte o batimento dos tufos de flagelos e volta pelo mesmo caminho.'
+  },
+  {
+    id: 'vibrio',
+    displayName: 'vibrio',
+    commonName: 'Vibrião',
+    sciName: 'Vibrio sp.',
+    wikiTitle: 'Vibrio',
+    shape: 'vibrio',
+    color: '#d8d6cc', colorDark: '#2e2e29',
+    length: 12, width: 4,
+    depth: 1, rarity: 'incomum', habitat: ['water'],
+    motility: 'flagella-smooth', speed: 2.2,
+    divides: true,
+    desc: 'Bastonete curvo em forma de vírgula, com um único flagelo polar. O gênero vive em águas doces, salobras e marinhas; algumas espécies causam doenças, como o Vibrio cholerae, agente da cólera.',
+    behavior: 'Um dos nadadores mais rápidos da amostra: dispara em linha reta, empurrado pelo flagelo, e muda de direção de repente.'
+  },
+  {
+    id: 'spirochete',
+    displayName: 'spirochete',
+    commonName: 'Espiroqueta',
+    sciName: 'Spirochaeta plicatilis',
+    wikiTitle: 'Spirochaeta',
+    shape: 'spirochete', turns: 7,
+    color: '#d8d6cc', colorDark: '#2e2e29',
+    length: 70, width: 5,
+    depth: 1, rarity: 'comum', habitat: ['water'],
+    motility: 'flagella-smooth', speed: 0.9,
+    desc: 'Bactéria longuíssima e fina, enrolada em espiral apertada. Seus flagelos ficam escondidos dentro da célula (endoflagelos), entre a parede e a membrana externa, e fazem o corpo inteiro girar. Vive em lodos e águas paradas com pouco oxigênio.',
+    behavior: 'Avança girando sem parar, como um saca-rolhas; às vezes se dobra e se contorce no lugar.'
   },
 
   // ---------------------------------------------------------------------------
@@ -1309,6 +1434,7 @@ const SPECIES = [
     length: 18, width: 7,
     depth: 1, rarity: 'comum', habitat: ['milk'],
     motility: 'flagella-run-tumble', speed: 1.5,
+    divides: true,
     health: 'patogenica', gram: 'Gram-negativa',
     desc: 'Bastonete curto com vários flagelos espalhados pelo corpo. Vive no intestino de pessoas e animais, por isso sua presença no leite indica contaminação fecal — é o indicador clássico de higiene na indústria de alimentos.',
     behavior: 'Nada em "corridas" retas, com os flagelos enrolados num feixe, e de repente dá uma "cambalhota" (tumble) e sai numa direção nova, ao acaso.',
@@ -1345,6 +1471,7 @@ const SPECIES = [
     length: 19, width: 7,
     depth: 2, rarity: 'incomum', habitat: ['milk'],
     motility: 'flagella-run-tumble', speed: 1.4,
+    divides: true,
     health: 'patogenica', gram: 'Gram-negativa',
     desc: 'Bastonete coberto de flagelos, parente próximo da E. coli. Vive no intestino de animais e chega ao leite por contaminação fecal durante a ordenha.',
     behavior: 'Nadadora ativa: corre em linha reta e dá cambalhotas para mudar de rumo, como a E. coli.',
@@ -1363,6 +1490,7 @@ const SPECIES = [
     length: 14, width: 6,
     depth: 3, rarity: 'raro', habitat: ['milk'],
     motility: 'flagella-run-tumble', speed: 0.9,
+    divides: true,
     health: 'patogenica', gram: 'Gram-positiva',
     desc: 'Bastonete pequeno e muito resistente: cresce até na temperatura de geladeira (é psicrotrófica) e tolera sal e acidez. Vive no solo e na silagem, e forma biofilmes em ralos e equipamentos de laticínios.',
     behavior: 'Em temperatura ambiente tem flagelos e se move com um "tombamento" característico (tumbling); a 37 °C, dentro do corpo, deixa de produzir os flagelos.',
@@ -1453,6 +1581,7 @@ const SPECIES = [
     length: 17, width: 6,
     depth: 1, rarity: 'incomum', habitat: ['milk'],
     motility: 'flagella-smooth', speed: 1.9,
+    divides: true,
     health: 'deteriorante', gram: 'Gram-negativa',
     desc: 'Bastonete com um tufo de flagelos numa das pontas, comum na água, no solo e em superfícies úmidas. É psicrotrófica: multiplica-se bem dentro do tanque de refrigeração do leite.',
     behavior: 'Nadadora rápida e quase retilínea, empurrada pelos flagelos polares como por uma hélice.',
@@ -1496,10 +1625,10 @@ const MILK_LOTS = [
 ];
 
 const RARITY_INFO = {
-  comum:     { label: 'COMUM',     color: '#7f9e8a', weight: 50 },
-  incomum:   { label: 'INCOMUM',   color: '#4f8fb0', weight: 30 },
-  raro:      { label: 'RARO',      color: '#9a6fc9', weight: 15 },
-  lendario:  { label: 'LENDÁRIO',  color: '#d4af37', weight: 5  },
+  comum:     { label: 'COMUM',     plural: 'comuns',    color: '#111111', weight: 50 },
+  incomum:   { label: 'INCOMUM',   plural: 'incomuns',  color: '#2e8b57', weight: 30 },
+  raro:      { label: 'RARO',      plural: 'raros',     color: '#8e44ad', weight: 15 },
+  lendario:  { label: 'LENDÁRIO',  plural: 'lendários', color: '#c9a227', weight: 5  },
 };
 
 const DEPTH_INFO = {
@@ -2251,9 +2380,9 @@ class Organism {
       }
       case 'spirochete': {
         const g = el('g', {});
-        const turns = 4;
+        const turns = s.turns || 4;
         const pts = [];
-        const steps = 40;
+        const steps = Math.max(40, Math.round(turns*10));
         for(let i=0;i<=steps;i++){
           const t = i/steps;
           const xx = -L/2 + t*L;
@@ -2262,11 +2391,77 @@ class Organism {
         }
         const path = el('polyline', {
           points:'', fill:'none', stroke: s.colorDark, 'stroke-opacity':0.55,
-          'stroke-width': 1.6, 'stroke-linecap':'round'
+          'stroke-width': 1.6, 'stroke-linecap':'round', 'stroke-linejoin':'round'
         });
         g.appendChild(path);
-        this.wavePoints = { turns, steps, L, W, basePts: pts };
+        // the coil wave runs along the body: the cell reads as spinning
+        this.wavePoints = { turns, steps, L, W, basePts: pts, travel: true };
         this.waveEl = path;
+        return g;
+      }
+      case 'stentor-trumpet': {
+        // Stentor: a soft trumpet — wide oral end in front (+x) ringed by the
+        // big membranellar cilia (the only cilia drawn, as seen under the
+        // lens), tapering to a narrow holdfast at the back; blue-green
+        // pigment stripes run lengthwise and the macronucleus is a bead chain
+        const g = el('g', {});
+        const path = el('path', Object.assign({ d:'' }, this._fillAttrs(s, 0.34)));
+        g.appendChild(path);
+        const nverts = 22;
+        this._softBasePts = this._softEllipsePath(L, W, nverts, a => {
+          const c = Math.cos(a); // +1 front (mouth), -1 back (foot)
+          return c >= 0 ? [0.94 - 0.06*c*c, 0.78 + 0.22*Math.sqrt(c)] : [1, 0.78 + 0.66*c];
+        });
+        this.softBlob = new SoftBlob(nverts, { amp: 0.035, speed: 0.9 });
+        this._softPathEl = path;
+        for(let k=-3;k<=3;k++){
+          const y0 = k*W*0.13;
+          g.appendChild(el('path', { d:`M ${(L*0.42).toFixed(2)} ${y0.toFixed(2)} Q ${(L*0.05).toFixed(2)} ${(y0*0.75).toFixed(2)} ${(-L*0.44).toFixed(2)} ${(y0*0.08).toFixed(2)}`,
+            fill:'none', stroke:'#4f8696', 'stroke-width':0.7, 'stroke-opacity':0.3 }));
+        }
+        g.appendChild(el('ellipse', { cx:(L*0.43).toFixed(2), cy:0, rx:(L*0.05).toFixed(2), ry:(W*0.4).toFixed(2),
+          fill:'none', stroke:s.colorDark, 'stroke-width':0.5, 'stroke-opacity':0.5 })); // oral disc, edge-on
+        for(let i=0;i<7;i++){
+          const t = i/6;
+          g.appendChild(el('circle', { cx:(L*(0.2 - 0.42*t)).toFixed(2), cy:(Math.sin(t*Math.PI*1.4)*W*0.1).toFixed(2), r:(W*0.075).toFixed(2), fill:s.colorDark, opacity:0.32 }));
+        }
+        const cilia = el('g', { class:'cilia', opacity:0.5 });
+        for(let i=0;i<22;i++){
+          const a = (i/21 - 0.5)*1.9;
+          const px = L*0.43 + Math.cos(a)*L*0.04, py = Math.sin(a)*W*0.5;
+          cilia.appendChild(el('line', { x1:px.toFixed(2), y1:py.toFixed(2), x2:(px + Math.cos(a)*W*0.17).toFixed(2), y2:(py + Math.sin(a)*W*0.17).toFixed(2),
+            stroke:s.colorDark, 'stroke-width':0.4 }));
+        }
+        g.appendChild(cilia);
+        this.ciliaEl = cilia;
+        this._stentor = { k: 0 };
+        return g;
+      }
+      case 'biflagellate': {
+        // Chlamydomonas: oval cell with a cup-shaped chloroplast (pyrenoid at
+        // its base), a red eyespot, and two equal front flagella that beat
+        // like a breaststroke (render sweeps their rest angle)
+        const g = el('g', {});
+        const path = el('path', Object.assign({ d:'' }, this._fillAttrs(s, 0.36)));
+        g.appendChild(path);
+        const nverts = 16;
+        this._softBasePts = this._softEllipsePath(L*0.86, W, nverts, a => [1, 0.94 - 0.06*Math.cos(a)]);
+        this.softBlob = new SoftBlob(nverts, { amp: 0.012, speed: 0.6 });
+        this._softPathEl = path;
+        g.appendChild(el('path', { d:`M ${(L*0.12).toFixed(2)} ${(-W*0.4).toFixed(2)} C ${(-L*0.5).toFixed(2)} ${(-W*0.5).toFixed(2)} ${(-L*0.5).toFixed(2)} ${(W*0.5).toFixed(2)} ${(L*0.12).toFixed(2)} ${(W*0.4).toFixed(2)} C ${(-L*0.12).toFixed(2)} ${(W*0.22).toFixed(2)} ${(-L*0.12).toFixed(2)} ${(-W*0.22).toFixed(2)} ${(L*0.12).toFixed(2)} ${(-W*0.4).toFixed(2)} Z`,
+          fill:'#6f8f58', 'fill-opacity':0.45 })); // cup chloroplast
+        g.appendChild(el('circle', { cx:(-L*0.2).toFixed(2), cy:0, r:(W*0.13).toFixed(2), fill:'none', stroke:'#3f5a33', 'stroke-width':0.45, 'stroke-opacity':0.6 })); // pyrenoid
+        g.appendChild(el('circle', { cx:(L*0.14).toFixed(2), cy:(-W*0.34).toFixed(2), r:(W*0.07).toFixed(2), fill:'#b5523f', opacity:0.7 })); // eyespot
+        this._breast = [];
+        [-1, 1].forEach(side=>{
+          const chain = new TailChain(6, L*0.22, { stiffness: 0.42, damping: 0.72 });
+          const tailEl = el('path', { d:'', fill:'none', stroke:s.colorDark, 'stroke-width':0.55, 'stroke-opacity':0.6, 'stroke-linecap':'round' });
+          g.appendChild(tailEl);
+          const tail = { chain, el: tailEl, localAttach: { x: L*0.42, y: side*W*0.06 }, restAngle: side*0.6,
+                         flutterPhase: Math.random()*Math.PI*2, flutterAmount: 0.8 };
+          this.tails.push(tail);
+          this._breast.push({ tail, side });
+        });
         return g;
       }
       case 'vibrio': {
@@ -2812,25 +3007,25 @@ class Organism {
         this._softBasePts = basePts;
         this._softPathEl = path;
 
-        const inner = el('g', { class:'volvox-cells' });
-        const n = 24;
+        // a hollow ball of cells: points spread evenly over a sphere
+        // (Fibonacci lattice) plus a few daughter colonies inside; render()
+        // spins the sphere and projects it, so cells on the far side shrink
+        // and fade while the near ones grow — it reads as a 3-D rolling ball
+        const cells = [];
+        const n = 64;
         for(let i=0;i<n;i++){
-          const t = (i/n)*Math.PI*2;
-          const rr = W*0.44;
-          inner.appendChild(el('circle', {
-            cx: Math.cos(t)*rr, cy: Math.sin(t)*rr, r: 1.4, fill: s.colorDark, opacity:0.45
-          }));
+          const y = 1 - 2*(i+0.5)/n, r = Math.sqrt(1 - y*y), a = i*2.39996;
+          const c = el('circle', { cx:0, cy:0, r:1.2, fill:s.colorDark, opacity:0.4 });
+          g.appendChild(c);
+          cells.push({ el:c, p:[Math.cos(a)*r, y, Math.sin(a)*r], R:W*0.46, size:1.25 });
         }
-        g.appendChild(inner);
         for(let i=0;i<3;i++){
-          const ang = Math.random()*Math.PI*2;
-          const dist = W*0.2*Math.random();
-          g.appendChild(el('circle', {
-            cx: Math.cos(ang)*dist, cy: Math.sin(ang)*dist, r: W*0.1,
-            fill: s.color, opacity:0.3
-          }));
+          const a = Math.random()*Math.PI*2, b = Math.acos(2*Math.random()-1);
+          const c = el('circle', { cx:0, cy:0, r:W*0.1, fill:s.color, 'fill-opacity':0.5, stroke:'#5f7650', 'stroke-width':0.5, 'stroke-opacity':0.5, opacity:0.5 });
+          g.appendChild(c);
+          cells.push({ el:c, p:[Math.sin(b)*Math.cos(a), Math.cos(b), Math.sin(b)*Math.sin(a)], R:W*0.2, size:W*0.1, daughter:true });
         }
-        this.volvoxInner = inner;
+        this._volvox3d = { cells, tilt: 0.35 + Math.random()*0.5 };
         return g;
       }
       default: {
@@ -2858,6 +3053,27 @@ class Organism {
 
     if(this.tun) return; // cryptobiosis: metabolism suspended, completely still
 
+    // being swallowed by a predator: drawn into it, shrinking (game removes it)
+    if(this.beingEaten){
+      const e = this.beingEaten, pred = e.by;
+      e.t += dt;
+      const k = Math.min(1, dt*4);
+      this.x += (pred.x - this.x)*k; this.y += (pred.y - this.y)*k;
+      if(e.t >= Organism.EAT_TIME) this.dead = true;
+      return;
+    }
+
+    // dividing (binary fission): the two daughter cells slide apart along
+    // the split axis, without swimming off until they've separated
+    if(this._split){
+      const sp = this._split, step = Math.min(dt, Organism.SPLIT_TIME - sp.t);
+      sp.t += dt;
+      this.x += Math.cos(sp.axis) * sp.dir * (sp.dist/2) * step/Organism.SPLIT_TIME;
+      this.y += Math.sin(sp.axis) * sp.dir * (sp.dist/2) * step/Organism.SPLIT_TIME;
+      if(sp.t >= Organism.SPLIT_TIME) this._split = null;
+      return;
+    }
+
     const mot = this.species.motility;
     // organisms with no real escape locomotion (anchored Vorticella, inert
     // diatoms/desmids drifting passively) can't "dart away" — a startled
@@ -2876,6 +3092,18 @@ class Organism {
       this._behaviorUpdate(dt);
     }
 
+    // ---- caught in the pipette's suction: it panics and struggles to get
+    // away, jerking in new directions — the player has to follow it with the
+    // tip. Things that can't swim only shake (see render).
+    if(this.suction && canDart){
+      this._struggleT = (this._struggleT || 0) - dt;
+      if(this._struggleT <= 0){
+        this.angle = this.displayAngle + (Math.random()-0.5)*2.6;
+        this._struggleT = 0.25 + Math.random()*0.35;
+      }
+      this.speed = this.baseSpeed * 1.8;
+    }
+
     // ---- turning: the drawn body (displayAngle) eases toward the intended
     // heading (this.angle) with a capped angular speed that depends on how the
     // organism moves — a ciliate pivots briskly, a crawling amoeba or a
@@ -2887,7 +3115,7 @@ class Organism {
     {
       // species can override (long bacterial chains and clusters jiggle in
       // place but don't spin around like a small free cell would)
-      const rate = (this.species.turnRate || TURN_RATE[mot] || 2.0) * (this.fleeing ? 3 : 1);
+      const rate = (this.species.turnRate || TURN_RATE[mot] || 2.0) * (this.fleeing ? 3 : this.suction ? 2.5 : 1);
       const eased = delta * (1 - Math.exp(-dt*5));
       const maxStep = rate * dt;
       this.displayAngle += Math.max(-maxStep, Math.min(maxStep, eased));
@@ -2896,7 +3124,7 @@ class Organism {
     // ---- move along the direction the body is actually pointing (a cell
     // can't slide sideways), slowing down while it is still mid-turn.
     const turnSlow = 1 - 0.55*Math.min(1, Math.abs(delta)/1.4);
-    const moveMul = (this.suction ? 0.15 : 1) * turnSlow;
+    const moveMul = (this.suction ? (canDart ? 0.3 : 0.1) : 1) * turnSlow;
     this.x += Math.cos(this.displayAngle) * this.speed * dt * 26 * moveMul;
     this.y += Math.sin(this.displayAngle) * this.speed * dt * 26 * moveMul;
 
@@ -3005,7 +3233,8 @@ class Organism {
         }
         this.speed = this.baseSpeed;
         this.angle += Math.sin(this.phase*0.9)*0.012 + (Math.random()-0.5)*0.03;
-        if(Math.random() < 0.0015) this._metaboly = 1.2 + Math.random()*1.5;
+        // (only euglenids squirm — Chlamydomonas has a rigid cell wall)
+        if(s.shape === 'euglena-flagellate' && Math.random() < 0.0015) this._metaboly = 1.2 + Math.random()*1.5;
         break;
       }
       case 'gliding': {
@@ -3132,17 +3361,22 @@ class Organism {
     // small side-to-side wag, scaled by how hard it's swimming (a resting
     // cell barely wags; a dying one doesn't at all)
     const sf = this._speedFactor || 0;
-    const wig = this.dying ? 0 : Math.sin(this.phase) * (this.fleeing ? 3 : 0.6 + 1.2*Math.min(1,sf)) * this.wobble;
+    // struggling in the pipette's suction: a fast, hard wag plus a jitter
+    const struggling = this.suction && !this.dying;
+    const wig = this.dying ? 0 : struggling ? Math.sin(this.phase*3.1) * 7 * this.wobble
+      : Math.sin(this.phase) * (this.fleeing ? 3 : 0.6 + 1.2*Math.min(1,sf)) * this.wobble;
     const angDeg = this.displayAngle * 180/Math.PI;
     const angRad = this.displayAngle + wig*Math.PI/180;
-    // death: shrivels a little while it fades out
+    const jx = struggling ? (Math.random()-0.5)*1.4 : 0, jy = struggling ? (Math.random()-0.5)*1.4 : 0;
+    // death: shrivels a little while it fades out; being eaten: shrinks away inside the predator
     const deathK = this.dying ? Math.min(1, this.dyingT / Organism.DEATH_TIME) : 0;
-    const shrink = 1 - 0.22*deathK;
+    const eatK = this.beingEaten ? Math.min(1, this.beingEaten.t / Organism.EAT_TIME) : 0;
+    const shrink = (1 - 0.22*deathK) * (1 - 0.8*eatK);
     this.group.setAttribute('transform',
-      `translate(${this.x.toFixed(2)},${this.y.toFixed(2)}) rotate(${angDeg.toFixed(1)}) rotate(${wig.toFixed(2)})` + (deathK ? ` scale(${shrink.toFixed(3)})` : '')
+      `translate(${(this.x+jx).toFixed(2)},${(this.y+jy).toFixed(2)}) rotate(${angDeg.toFixed(1)}) rotate(${wig.toFixed(2)})` + (shrink !== 1 ? ` scale(${shrink.toFixed(3)})` : '')
     );
-    this.group.style.opacity = (this.spawnFade * (1 - deathK)).toFixed(3);
-    if(this.dying) return; // frozen: no beating, no breathing — it's dead
+    this.group.style.opacity = (this.spawnFade * (1 - deathK) * (1 - 0.85*eatK)).toFixed(3);
+    if(this.dying || this.beingEaten) return; // frozen: no beating, no breathing
 
     // metachronal ciliary beat: each cilium sweeps back and forth with a phase
     // lag relative to its neighbour, so a wave runs around the cell — the way
@@ -3197,8 +3431,29 @@ class Organism {
         c.b.setAttribute('x2', (x-1.3).toFixed(2)); c.b.setAttribute('y2', (y+w+1.5).toFixed(2)); });
       drops.forEach(dr=>{ dr.el.setAttribute('cx', X(dr.t).toFixed(2)); dr.el.setAttribute('cy', (cy(dr.t)+dr.off*hw(dr.t)).toFixed(2)); });
     }
-    if(this.volvoxInner){
-      this.volvoxInner.setAttribute('transform', `rotate(${(this.phase*20)%360})`);
+    if(this._volvox3d){
+      const { cells, tilt } = this._volvox3d;
+      const th = this.phase*0.35, ct = Math.cos(th), st = Math.sin(th), cf = Math.cos(tilt), sf = Math.sin(tilt);
+      cells.forEach(c=>{
+        const [x, y, z] = c.p;
+        const x1 = x*ct + z*st, z1 = -x*st + z*ct;          // spin about the vertical axis
+        const y2 = y*cf - z1*sf, z2 = y*sf + z1*cf;         // tilted spin axis
+        const near = (z2 + 1)/2;                            // 0 far side .. 1 near side
+        c.el.setAttribute('cx', (x1*c.R).toFixed(2));
+        c.el.setAttribute('cy', (y2*c.R).toFixed(2));
+        c.el.setAttribute('r', (c.size*(0.65 + 0.55*near)).toFixed(2));
+        c.el.setAttribute('opacity', ((c.daughter ? 0.25 : 0.1) + (c.daughter ? 0.35 : 0.5)*near).toFixed(3));
+      });
+    }
+    // Stentor: contracts into a ball when poked or sucked, then slowly re-extends
+    if(this._stentor && this.bodyEl){
+      const k = this._stentor.k += (((this.fleeing || this.suction) ? 1 : 0) - this._stentor.k) * Math.min(1, dt*((this.fleeing || this.suction) ? 9 : 1.2));
+      this.bodyEl.setAttribute('transform', `scale(${(1 - 0.45*k).toFixed(3)},${(1 + 0.22*k).toFixed(3)})`);
+    }
+    // Chlamydomonas breaststroke: both flagella sweep from forward-out to backward
+    if(this._breast){
+      const sweep = 0.5 + 0.5*Math.sin(this._beatPhase*0.55);
+      this._breast.forEach(b=>{ b.tail.restAngle = b.side*(0.35 + 1.9*sweep); });
     }
     if(this.chainCurve){
       const { W, amp, els } = this.chainCurve;
@@ -3495,6 +3750,8 @@ class Organism {
 }
 
 Organism.DEATH_TIME = 1.8;
+Organism.EAT_TIME = 0.9;   // seconds for prey to be drawn in and swallowed
+Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
 
 (function(){
   const droppletSvg = document.getElementById('droplet-svg');
@@ -3560,6 +3817,7 @@ Organism.DEATH_TIME = 1.8;
   let deathsAtEdge = 0;
   let tunToastShown = false;
   let dryElapsed = 0;
+  let dryPaused = false; // "pausar secagem": the drop stops evaporating
   let gameOver = false;
   let simTime = 0;
   let currentSlide = 'water'; // 'water' | 'soil' | 'milk'
@@ -4117,22 +4375,42 @@ Organism.DEATH_TIME = 1.8;
     'b. cereus':   '<rect x="1" y="5.8" width="6.6" height="4.4" rx="1.2"/><rect x="8.4" y="5.8" width="6.6" height="4.4" rx="1.2"/><ellipse cx="4.6" cy="8" rx="1.3" ry=".9"/><ellipse cx="11.4" cy="8" rx="1.3" ry=".9"/>',
     'm. bovis':    '<path d="M2.5 6.5c3.5-1 7.5-1 11 1M3.5 10.5c3-.8 6-.4 8.5.8" fill="none" stroke-width="1.3" stroke-linecap="round"/>',
     brucella:      '<ellipse cx="5.5" cy="7" rx="2" ry="1.5"/><ellipse cx="10.5" cy="9.2" rx="2" ry="1.5"/>',
-    pseudomonas:   '<rect x="6" y="5.8" width="8" height="4.4" rx="2.2"/><path d="M6.1 8c-1.2-1.3-2.1-1.3-2.7 0S2 9.3 1 8" fill="none" stroke-width=".8"/>'
+    pseudomonas:   '<rect x="6" y="5.8" width="8" height="4.4" rx="2.2"/><path d="M6.1 8c-1.2-1.3-2.1-1.3-2.7 0S2 9.3 1 8" fill="none" stroke-width=".8"/>',
+    // water / soil additions
+    stentor:       '<path d="M6.2 3l4.6 3.6c1.6 1.3 1.4 3.7-.4 4.7-2 1.1-4.4.2-4.9-2L4 4.6"/><path d="M11.4 6.4l1.4-.8M12 8.4l1.6-.2M11.6 10.4l1.4.6" stroke-width=".7"/>',
+    chlamydomonas: '<ellipse cx="7" cy="8" rx="3.6" ry="3"/><path d="M10.4 7.4c1.6-1.6 3-2.6 4.4-2.4M10.4 8.6c1.6 1.6 3 2.6 4.4 2.4" fill="none" stroke-width=".8"/>',
+    bacillus:      '<rect x="4" y="6" width="8" height="4" rx="2"/><path d="M4.2 7c-1-.6-2-.3-2.8-.9M4.2 9c-1 .6-2 .3-2.8.9" fill="none" stroke-width=".7"/>',
+    spirillum:     '<path d="M2 8c1.5-3 3-3 4 0s2.5 3 4 0 2.5-3 4 0" fill="none" stroke-width="1.4"/>',
+    vibrio:        '<path d="M4 10c1.5-4 6.5-4 8 0" fill="none" stroke-width="2" stroke-linecap="round"/><path d="M12 10c.8 1 1.8 1.4 2.8 1" fill="none" stroke-width=".7"/>'
   };
-  let lastRailGroup = null;
-  SPECIES.forEach(sp=>{
-    const group = sp.habitat.includes('milk') ? 'milk' : 'env';
+  // grouped by sample, then from the common ones (black) to the rarest
+  // (green, purple, gold) — each row carries its rarity colour
+  const RARITY_ORDER = { comum:0, incomum:1, raro:2, lendario:3 };
+  const railGroup = sp => sp.habitat.includes('milk') ? 1 : 0;
+  const railSpecies = SPECIES.slice().sort((a,b)=> railGroup(a) - railGroup(b) || RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity]);
+  let lastRailGroup = null, lastRailRarity = null;
+  railSpecies.forEach(sp=>{
+    const group = railGroup(sp) ? 'milk' : 'env';
     if(group !== lastRailGroup){
       const sub = document.createElement('div');
       sub.className = 'rail-sub';
       sub.textContent = group === 'milk' ? 'Leite · laticínios' : 'Água e solo';
       shapeListEl.appendChild(sub);
-      lastRailGroup = group;
+      lastRailGroup = group; lastRailRarity = null;
+    }
+    if(sp.rarity !== lastRailRarity){
+      const rs = document.createElement('div');
+      rs.className = 'rail-rarity';
+      rs.style.setProperty('--rar', RARITY_INFO[sp.rarity].color);
+      rs.textContent = RARITY_INFO[sp.rarity].plural;
+      shapeListEl.appendChild(rs);
+      lastRailRarity = sp.rarity;
     }
     const label = sp.displayName;
     const row = document.createElement('div');
     row.className = 'shape-entry';
     row.dataset.label = label;
+    row.style.setProperty('--rar', RARITY_INFO[sp.rarity].color);
     const glyph = SHAPE_ICONS[label] || '<circle cx="8" cy="8" r="3"/>';
     // the health dot only shows once the species has been collected
     const dot = sp.health ? `<i class="hdot ${sp.health}" title="${HEALTH_INFO[sp.health].short}"></i>` : '';
@@ -4380,7 +4658,7 @@ Organism.DEATH_TIME = 1.8;
         const [col, op] = PP_LIQUID[currentSlide] || PP_LIQUID.water;
         ppLiquid.setAttribute('fill', col); ppLiquid.setAttribute('fill-opacity', op);
       }
-      const p = holding ? Math.min(1, holdProgress*1000/HOLD_DURATION) : 0;
+      const p = holding ? Math.min(1, holdProgress*1000/HOLD_DURATION) : pendingRelease ? 0.55 : 0;
       ppLevel += (p - ppLevel) * Math.min(1, dt*(p > ppLevel ? 12 : 4)); // rises with the suction, drains slower
       const squeezeTarget = ppPressed ? (holding ? 1 - p : 1) : 0;
       ppSqueeze += (squeezeTarget - ppSqueeze) * Math.min(1, dt*14);
@@ -4398,6 +4676,134 @@ Organism.DEATH_TIME = 1.8;
     requestAnimationFrame(pipetteLoop);
   }
   requestAnimationFrame(pipetteLoop);
+
+  // ---- poking the water, and putting specimens back on the slide ----
+  let pendingRelease = null; // species picked in its sheet, waiting for a click on the slide
+  function placeOrganism(species, x, y, depth){
+    const org = new Organism(species, MAP_W, MAP_H);
+    org.x = x; org.y = y;
+    org.depthLevel = depth;
+    org.spawnFade = 0;
+    organisms.push(org);
+    layerGroups[depth].g.appendChild(org.group);
+    attachInteraction(org);
+    return org;
+  }
+  function releaseSpecimen(species, x, y){
+    if(!isInsideWetBlob(x, y, simTime, 0.95)){ showToast('Solte dentro da gota.', true); return; }
+    pendingRelease = null;
+    const org = placeOrganism(species, x, y, species.depth);
+    org.spawnFade = 0.4;
+    spawnRipple(x, y);
+    caughtLog[species.id]--;
+    if(caughtLog[species.id] <= 0) delete caughtLog[species.id];
+    if(currentDepth !== species.depth) applyDepth(species.depth); // focus on the plane it lives in
+    updateReel(); updateHud();
+    showToast(`${species.displayName} solto na lâmina`, false);
+  }
+  // capture phase: while carrying a specimen, this click drops it instead of grabbing one
+  dropletClip.addEventListener('pointerdown', (e)=>{
+    if(!pendingRelease || gameOver) return;
+    e.stopPropagation();
+    const pt = svgPointFromEvent(e);
+    releaseSpecimen(pendingRelease, pt.x, pt.y);
+  }, true);
+  // a click that hits no organism (organisms stop their own clicks): the
+  // pipette tip pokes the water — a ripple, and whatever is close by in the
+  // focused plane gets startled and darts away
+  dropletClip.addEventListener('pointerdown', (e)=>{
+    if(gameOver) return;
+    const pt = svgPointFromEvent(e);
+    spawnRipple(pt.x, pt.y);
+    organisms.forEach(o=>{
+      if(o.depthLevel !== currentDepth || o.caught || o.dying || o.beingEaten) return;
+      if(Math.hypot(o.x - pt.x, o.y - pt.y) < 60) o.triggerFlee(pt.x, pt.y);
+    });
+  });
+  window.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && pendingRelease){ pendingRelease = null; showToast('Soltura cancelada', false); }
+  });
+
+  // ---- life between organisms: live division and predation ----
+  const MAX_ORGANISMS = 160;
+  let divisionToastShown = false, predationToastShown = false;
+  // bacteria divide every ~20–50 s here, diatoms more slowly
+  function divisionDelay(sp){
+    return (sp.motility === 'gliding' || sp.motility === 'brownian') ? 30 + Math.random()*40 : 18 + Math.random()*30;
+  }
+  function updateDivision(o, dt){
+    if(!o.species.divides || o.caught || o.dying || o.beingEaten || o._split || o.suction || o.tun || o.fleeing) return;
+    if(o._divT === undefined) o._divT = divisionDelay(o.species);
+    o._divT -= dt;
+    if(o._divT > 0) return;
+    o._divT = divisionDelay(o.species);
+    const same = organisms.filter(x => x.species === o.species && !x.dying && inView(x, 40)).length;
+    if(same >= (o.species.maxInView || 6) || organisms.length >= MAX_ORGANISMS) return;
+    if(!isInsideWetBlob(o.x, o.y, simTime, 0.9)) return;
+    divide(o);
+  }
+  // binary fission: the daughter starts on top of the mother and both slide
+  // apart — rods split across the middle and separate end to end; diatoms
+  // split along the valve plane, so the two daughters end up side by side
+  function divide(o){
+    const sp = o.species;
+    const child = placeOrganism(sp, o.x, o.y, o.depthLevel);
+    child.spawnFade = o.spawnFade;
+    child.angle = child.displayAngle = o.displayAngle;
+    const rod = ['bacillus','vibrio','spirillum'].includes(sp.shape);
+    const axis = o.displayAngle + (rod ? 0 : Math.PI/2);
+    const dist = rod ? sp.length*1.05 : sp.width*1.1;
+    o._split = { t:0, dir:1, axis, dist };
+    child._split = { t:0, dir:-1, axis, dist };
+    child._divT = divisionDelay(sp);
+    if(!divisionToastShown && inView(o, 0)){
+      divisionToastShown = true;
+      showToast(`${sp.displayName} está se dividindo ao vivo (fissão binária)!`, false, null, 2600);
+    }
+  }
+  // predators (species with an "eats" list) swallow prey of those species
+  // that touch them in the same focal plane, and steer toward food they
+  // sense nearby; then they need a while to digest before eating again
+  function updatePredation(o, dt){
+    const eats = o.species.eats;
+    if(!eats || o.caught || o.dying || o.beingEaten || o._split || o.tun || o.suction) return;
+    if(o._digest > 0){ o._digest -= dt; return; }
+    const reach = Math.max(o.species.length, o.species.width) * 0.5;
+    let best = null, bestD = Infinity;
+    for(const p of organisms){
+      if(p === o || p.depthLevel !== o.depthLevel || !eats.includes(p.species.id)) continue;
+      if(p.caught || p.dying || p.beingEaten || p.tun || p._split) continue;
+      const d = Math.hypot(p.x - o.x, p.y - o.y);
+      if(d < bestD){ best = p; bestD = d; }
+    }
+    if(!best) return;
+    const preyR = Math.max(best.species.length, best.species.width) * 0.3;
+    if(bestD < reach + preyR){
+      if(Math.random() < dt*1.5) swallow(o, best);
+    } else if(bestD < reach*4 && o.species.motility !== 'stalked' && !o.fleeing){
+      const toward = Math.atan2(best.y - o.y, best.x - o.x);
+      o.angle += Math.atan2(Math.sin(toward - o.angle), Math.cos(toward - o.angle)) * Math.min(1, dt*2);
+    }
+  }
+  function swallow(pred, prey){
+    prey.beingEaten = { by: pred, t: 0 };
+    prey.suction = false;
+    if(holding === prey){
+      holding = null;
+      captureProgress.style.display = 'none';
+      window.removeEventListener('pointermove', onHoldMove);
+      window.removeEventListener('pointerup', onHoldEnd);
+      showToast(`O ${pred.species.displayName} comeu o ${prey.species.displayName} que você estava pegando!`, true, null, 2800);
+    } else if(!predationToastShown && inView(pred, 0)){
+      predationToastShown = true;
+      showToast(`${pred.species.displayName} comeu um ${prey.species.displayName}!`, false, null, 2600);
+    }
+    pred._digest = 12 + Math.random()*10;
+    // a fresh food vacuole shows up inside the predator and is slowly digested
+    const fv = el('circle', { cx:(-pred.species.length*0.05).toFixed(1), cy:0, r:(pred.species.width*0.14).toFixed(2), fill:'#6e5a3a', opacity:0.5 });
+    (pred.bodyEl || pred.group).appendChild(fv);
+    fv.animate([{ opacity:0.55 }, { opacity:0 }], { duration:12000, easing:'ease-in' }).onfinish = ()=> fv.remove();
+  }
 
   // color / duration are optional: the milk slide tints the toast with the
   // health verdict and keeps it up longer so it can be read
@@ -4439,7 +4845,7 @@ Organism.DEATH_TIME = 1.8;
       const h = HEALTH_INFO[sp.health];
       showToast(`Coletado: ${sp.displayName} · ${h.icon} ${h.label}`, false, h.color, 2800);
     } else {
-      showToast(`Coletado: ${sp.displayName} (${RARITY_INFO[sp.rarity].label})`, false);
+      showToast(`Coletado: ${sp.displayName} (${RARITY_INFO[sp.rarity].label})`, false, RARITY_INFO[sp.rarity].color);
     }
     updateHud();
     updateReel();
@@ -4470,7 +4876,7 @@ Organism.DEATH_TIME = 1.8;
 
   // ---- HUD updates ----
   function updateHud(){
-    const distinctCaught = Object.keys(caughtLog).length;
+    const distinctCaught = discoveredShapes.size;
     hudOrgCount.textContent = `${distinctCaught}/${SPECIES.length}`;
     document.getElementById('species-count').textContent = `${distinctCaught}/${SPECIES.length}`;
     const totalCaught = Object.values(caughtLog).reduce((a,b)=>a+b,0);
@@ -4552,7 +4958,11 @@ Organism.DEATH_TIME = 1.8;
   }
 
   // ---- species detail panel ----
+  let panelSpecies = null;
   function openSpeciesPanel(species){
+    panelSpecies = species;
+    // a specimen in a vial can be put back on the slide (it goes to its own focal plane)
+    document.getElementById('panel-release').style.display = (caughtLog[species.id] > 0 && !gameOver) ? '' : 'none';
     document.getElementById('panel-common-name').textContent = species.displayName;
     document.getElementById('panel-sci-name').textContent = species.sciName;
     document.getElementById('panel-real').textContent = species.commonName;
@@ -4614,7 +5024,9 @@ Organism.DEATH_TIME = 1.8;
       volvox:'Colônia esférica', tardigrade:'Corpo segmentado com 8 patas e garras', 'rotifer-crown':'Corpo com coroa ciliada', 'vorticella-stalked':'Sino preso a um talo',
       bacillus:'Bastonete (bacilo)', 'bacillus-chain':'Bastonetes em cadeia', 'coccus-chain':'Cocos em cadeia (colar de contas)',
       'coccus-cluster':'Cocos em cacho, como uvas', spirillum:'Espiral', 'bifid-rod':'Bastonete ramificado em "Y"',
-      'budding-yeast':'Célula oval com broto (levedura)'
+      'budding-yeast':'Célula oval com broto (levedura)', spirochete:'Espiral longa e apertada',
+      vibrio:'Bastonete curvo (vírgula)', 'stentor-trumpet':'Trompete com coroa de cílios na frente',
+      biflagellate:'Oval com dois flagelos na frente'
     };
     return map[shape] || shape;
   }
@@ -4634,12 +5046,18 @@ Organism.DEATH_TIME = 1.8;
   }
 
   panelClose.addEventListener('click', ()=> panelOverlay.classList.remove('open'));
+  document.getElementById('panel-release').addEventListener('click', ()=>{
+    if(!panelSpecies || !(caughtLog[panelSpecies.id] > 0) || gameOver) return;
+    pendingRelease = panelSpecies;
+    panelOverlay.classList.remove('open');
+    showToast(`Clique na lâmina para soltar: ${panelSpecies.displayName} (Esc cancela)`, false, null, 3000);
+  });
   panelOverlay.addEventListener('click', (e)=>{ if(e.target===panelOverlay) panelOverlay.classList.remove('open'); });
 
   // ---- drying system ----
   function updateDrying(dt){
     if(gameOver) return;
-    dryElapsed += dt;
+    if(!dryPaused) dryElapsed += dt;
     const t = Math.min(1, dryElapsed / DRY_DURATION);
     const shrink = Math.pow(t, 1.4);
     wetR = MAX_WET_R * (1 - shrink);
@@ -4662,7 +5080,7 @@ Organism.DEATH_TIME = 1.8;
 
     // anything left outside the receding water is stranded and dies
     organisms.forEach(o=>{
-      if(o.caught || o.escaped || o.dying) return;
+      if(o.caught || o.escaped || o.dying || o.beingEaten) return;
       if(!isInsideWetBlob(o.x, o.y, simTime, 1.0)){
         if(o.species.cryptobiosis){
           // tardigrade: survives the drying by becoming a tun — it can still be collected
@@ -4696,7 +5114,7 @@ Organism.DEATH_TIME = 1.8;
       restartBtn.textContent = 'Analisar novo lote';
     } else {
       const totalCaught = Object.values(caughtLog).reduce((a,b)=>a+b,0);
-      const distinct = Object.keys(caughtLog).length;
+      const distinct = discoveredShapes.size;
       driedTitle.textContent = 'A lâmina secou';
       driedSummary.textContent = `Coletados: ${totalCaught} espécimes · ${distinct}/${SPECIES.length} espécies catalogadas.`;
       restartBtn.textContent = 'Nova lâmina';
@@ -4743,6 +5161,14 @@ Organism.DEATH_TIME = 1.8;
     }
     return lines.join('\n');
   }
+
+  const dryPauseBtn = document.getElementById('dry-pause-btn');
+  dryPauseBtn.addEventListener('click', ()=>{
+    dryPaused = !dryPaused;
+    dryPauseBtn.textContent = dryPaused ? 'Retomar secagem' : 'Pausar secagem';
+    dryPauseBtn.setAttribute('aria-pressed', dryPaused ? 'true' : 'false');
+    showToast(dryPaused ? 'Secagem pausada' : 'A gota voltou a secar', false);
+  });
 
   laudoBtn.addEventListener('click', ()=>{
     if(currentSlide === 'milk' && !gameOver) endGame(true);
@@ -4826,6 +5252,8 @@ Organism.DEATH_TIME = 1.8;
         if(onScreen){
           if(o._hidden){ o.group.style.display = ''; o._hidden = false; }
           o.render(dt);
+          updateDivision(o, dt);
+          updatePredation(o, dt);
         } else if(!o._hidden){
           o.group.style.display = 'none'; o._hidden = true;
         }
