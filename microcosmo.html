@@ -599,6 +599,41 @@
   .reel-slot.rarity-raro::before{ background:#8e44ad; }
   .reel-slot.rarity-lendario::before{ background:#c9a227; }
 
+  /* ================= SLIDE CHANGE: glass slides crossing the stage ================= */
+  #slide-swap{ position:absolute; inset:0; z-index:78; display:none; overflow:hidden; }
+  #slide-swap.on{ display:block; }
+  /* the bare condenser light seen when there is no slide under the objective */
+  .swap-light{ position:absolute; inset:0; opacity:0;
+    background: radial-gradient(ellipse 75% 75% at 50% 50%, #fffef8 0%, #f1f0e7 45%, #c4c7bb 100%); }
+  .glass-slide{
+    position:absolute; left:50%; top:50%; width:min(72vw, 780px); aspect-ratio:3/1;
+    transform:translate(-62%,-50%); transform-origin:62% 50%; border-radius:4px;
+    background: linear-gradient(160deg, rgba(255,255,255,.6), rgba(214,230,225,.38) 45%, rgba(255,255,255,.5));
+    border:1px solid rgba(70,95,88,.45);
+    box-shadow: 0 26px 50px -14px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.4), inset 0 -3px 8px rgba(80,110,100,.2);
+  }
+  .glass-slide::after{ content:""; position:absolute; inset:0; border-radius:4px; pointer-events:none;
+    background: linear-gradient(115deg, rgba(255,255,255,.6) 0%, transparent 22%, transparent 72%, rgba(255,255,255,.32) 100%); }
+  /* frosted writing area at one end */
+  .gs-label{ position:absolute; left:3%; top:9%; bottom:9%; width:25%; box-sizing:border-box; padding:0 3%;
+    display:flex; flex-direction:column; justify-content:center; gap:4px; border-radius:2px; color:#222;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: repeating-linear-gradient(45deg, #f4f2ec 0 2px, #eceae2 2px 4px); box-shadow: inset 0 0 0 1px rgba(0,0,0,.07); }
+  .gs-label b{ font-size:clamp(.7rem, 1.7vw, 1.05rem); letter-spacing:.04em; }
+  .gs-label span{ font-size:clamp(.6rem, 1.3vw, .85rem); }
+  .gs-label small{ font-size:clamp(.5rem, 1vw, .66rem); color:#666; }
+  /* the sample: a drop under a square coverslip */
+  .gs-sample{ position:absolute; left:62%; top:50%; height:84%; aspect-ratio:1; transform:translate(-50%,-50%); }
+  .gs-drop{ position:absolute; inset:13%; border-radius:52% 47% 50% 46%; background:var(--drop);
+    box-shadow: inset 0 0 14px rgba(0,0,0,.14), 0 0 0 1px rgba(60,70,60,.16); }
+  .gs-cover{ position:absolute; inset:0; border-radius:2px; border:1px solid rgba(70,95,88,.35); background:rgba(255,255,255,.12); }
+  .gs-water{ --drop: radial-gradient(circle at 40% 35%, rgba(214,228,219,.9), rgba(150,176,161,.75)); }
+  .gs-soil{ --drop: radial-gradient(circle at 30% 62%, rgba(70,50,30,.7) 0 2px, transparent 3px),
+                    radial-gradient(circle at 64% 40%, rgba(70,50,30,.6) 0 3px, transparent 4px),
+                    radial-gradient(circle at 52% 72%, rgba(90,66,40,.6) 0 2px, transparent 3px),
+                    radial-gradient(circle at 40% 35%, rgba(200,176,128,.9), rgba(124,98,62,.85)); }
+  .gs-milk{ --drop: radial-gradient(circle at 40% 35%, #ffffff, #efe9db); }
+
   /* ================= LAB: culture plates + white analysis plane ================= */
   .lab{ position:fixed; inset:0; z-index:150; display:none; flex-direction:column; background:#fff; color:#111;
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -729,6 +764,13 @@
       </div>
     </div>
     <div class="toast mono" id="toast"></div>
+
+    <!-- slide change: the glass slides that travel across the stage -->
+    <div id="slide-swap" aria-hidden="true">
+      <div class="swap-light"></div>
+      <div class="glass-slide" id="swap-out"><div class="gs-label"><b></b><span></span><small></small></div><div class="gs-sample"><div class="gs-drop"></div><div class="gs-cover"></div></div></div>
+      <div class="glass-slide" id="swap-in"><div class="gs-label"><b></b><span></span><small></small></div><div class="gs-sample"><div class="gs-drop"></div><div class="gs-cover"></div></div></div>
+    </div>
 
     <!-- glass Pasteur pipette that follows the pointer. Drawn upright with the
          tip at (0,0) and tilted by the rotate(32); the script keeps the tip on
@@ -4227,16 +4269,95 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
   const rippleGroup = el('g', { class:'ripples' });
   droppletSvg.appendChild(rippleGroup);
 
+  // ---- "stone in the water" ripple ----
+  // A displacement-map filter bends everything around the click — organisms
+  // and debris alike — as a packet of circular waves runs outward and dies
+  // away, the way a pond's surface refracts what lies under it. The map is
+  // one pre-rendered wave packet (red/green = radial push) that the filter
+  // stretches outward over time while its strength fades.
+  const RIPPLE_MAP = (()=>{
+    const N = 256, cv = document.createElement('canvas');
+    cv.width = cv.height = N;
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(N, N);
+    const smooth = (a, b, x)=>{ const t = Math.max(0, Math.min(1, (x-a)/(b-a))); return t*t*(3-2*t); };
+    for(let j=0;j<N;j++) for(let i=0;i<N;i++){
+      const x = (i+0.5)/N*2 - 1, y = (j+0.5)/N*2 - 1, r = Math.hypot(x, y);
+      let d = 0;
+      if(r > 0.001 && r < 1){
+        const env = smooth(0, 0.85, r) * (1 - smooth(0.86, 1, r)) * (0.3 + 0.7*r); // leading crest strongest
+        d = Math.sin((r - 0.86) * Math.PI*2 * 3.2) * env;
+      }
+      const k = (j*N + i)*4;
+      img.data[k]   = Math.round(128 + 127*(r ? x/r : 0)*d);
+      img.data[k+1] = Math.round(128 + 127*(r ? y/r : 0)*d);
+      img.data[k+2] = 128; img.data[k+3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    return cv.toDataURL('image/png');
+  })();
+  let rippleSeq = 0;
+  // target: the group to bend; region(): the box (in svgEl's units) the
+  // filter must cover — the visible area, since a filter clips to its region
+  function createRippleFX(svgEl, target, region){
+    const id = `water-ripple-${++rippleSeq}`;
+    // sRGB so the neutral grey (128) really means "no displacement"
+    const f = el('filter', { id, filterUnits:'userSpaceOnUse', primitiveUnits:'userSpaceOnUse', 'color-interpolation-filters':'sRGB', x:0, y:0, width:1, height:1 });
+    f.appendChild(el('feFlood', { 'flood-color':'rgb(128,128,128)', result:'flat' }));
+    const wave = el('feImage', { x:0, y:0, width:1, height:1, preserveAspectRatio:'none', result:'wave' });
+    wave.setAttribute('href', RIPPLE_MAP);
+    wave.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', RIPPLE_MAP);
+    f.appendChild(wave);
+    const merge = el('feMerge', { result:'map' });
+    merge.appendChild(el('feMergeNode', { in:'flat' }));
+    merge.appendChild(el('feMergeNode', { in:'wave' }));
+    f.appendChild(merge);
+    const disp = el('feDisplacementMap', { in:'SourceGraphic', in2:'map', scale:0, xChannelSelector:'R', yChannelSelector:'G' });
+    f.appendChild(disp);
+    let d = svgEl.querySelector(':scope > defs');
+    if(!d){ d = el('defs', {}); svgEl.insertBefore(d, svgEl.firstChild); }
+    d.appendChild(f);
+    let active = null;
+    function frame(now){
+      if(!active) return;
+      const p = (now - active.t0) / active.dur;
+      if(p >= 1){ active = null; target.removeAttribute('filter'); return; }
+      const R = active.R * (0.12 + 0.88*(1 - Math.pow(1 - p, 2.2))); // fast at first, then slowing
+      wave.setAttribute('x', (active.x - R).toFixed(1)); wave.setAttribute('y', (active.y - R).toFixed(1));
+      wave.setAttribute('width', (2*R).toFixed(1)); wave.setAttribute('height', (2*R).toFixed(1));
+      disp.setAttribute('scale', (active.S * Math.pow(1 - p, 1.4)).toFixed(2));
+      const b = region();
+      f.setAttribute('x', b.x.toFixed(0)); f.setAttribute('y', b.y.toFixed(0));
+      f.setAttribute('width', b.w.toFixed(0)); f.setAttribute('height', b.h.toFixed(0));
+      requestAnimationFrame(frame);
+    }
+    return {
+      // R: how far the waves travel; S: displacement strength (both in svg units)
+      trigger(x, y, R, S, dur){
+        const idle = !active;
+        active = { x, y, R, S, dur: dur || 1400, t0: performance.now() };
+        target.setAttribute('filter', `url(#${id})`);
+        if(idle) requestAnimationFrame(frame);
+      }
+    };
+  }
+  const waterFX = createRippleFX(droppletSvg, livingRoot, ()=>({ x: camera.x - 40, y: camera.y - 40, w: VIEW_W + 80, h: VIEW_H + 80 }));
+
+  // the visible surface rings (bright crest + dark trough, three of them,
+  // staggered) on top of the refraction the filter does underneath
+  function waterRings(group, x, y, rMax, width){
+    for(let k=0;k<3;k++){
+      const delay = k*140, dur = 1300 - k*150, rr = rMax*(1 - k*0.22);
+      [['#fbfbf4', 0.55, 1.6*width, 0], ['#4d564c', 0.28, 1.1*width, -2.2*width]].forEach(([col, op, sw, off])=>{
+        const c = el('circle', { cx:x, cy:y, r:2, fill:'none', stroke:col, 'stroke-width':sw, opacity:0 });
+        group.appendChild(c);
+        c.animate([{ r: 2, opacity: op }, { r: Math.max(3, rr + off), opacity: 0 }],
+                  { duration: dur, delay, easing:'cubic-bezier(.15,.6,.3,1)' }).onfinish = ()=> c.remove();
+      });
+    }
+  }
   function spawnRipple(x, y){
-    const ring = el('circle', {
-      cx:x, cy:y, r:2, fill:'none', stroke:'#7d8878', 'stroke-width':1.4, opacity:0.55
-    });
-    rippleGroup.appendChild(ring);
-    const anim = ring.animate([
-      { r:2, opacity:0.55 },
-      { r:34, opacity:0 }
-    ], { duration: 900, easing:'cubic-bezier(.2,.6,.3,1)' });
-    anim.onfinish = ()=> ring.remove();
+    waterRings(rippleGroup, x, y, 160, 1);
+    waterFX.trigger(x, y, 190, 26, 1600);
   }
 
   function updateStaticBlobShapes(t){
@@ -5266,7 +5387,7 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
   });
 
   laudoBtn.addEventListener('click', ()=>{
-    if(currentSlide === 'milk' && !gameOver) endGame(true);
+    if(currentSlide === 'milk' && !gameOver && !swapping) endGame(true);
   });
 
   // ---- slide switching: fresh drop of the chosen sample (soil / water / milk) ----
@@ -5278,9 +5399,15 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
   const hudSlideName = document.getElementById('hud-slide-name');
   const slideBtns = document.querySelectorAll('.slide-btn');
 
-  function switchSlide(slide){
+  // instant swap of the sample on the stage (the transition below calls it
+  // while the view is hidden)
+  function applySlide(slide){
     currentSlide = slide;
-    if(holding){ holding.suction = false; holding = null; captureProgress.style.display = 'none'; }
+    if(holding){
+      holding.suction = false; holding = null; captureProgress.style.display = 'none';
+      window.removeEventListener('pointermove', onHoldMove);
+      window.removeEventListener('pointerup', onHoldEnd);
+    }
     // clear every organism from the old sample
     organisms.forEach(o=>{ if(o.group.parentNode) o.group.parentNode.removeChild(o.group); });
     organisms.length = 0;
@@ -5306,6 +5433,57 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     clampCamera(); applyViewBox();
     updateMilkHud();
     showToast(slide === 'milk' ? `${info.label} · lote nº ${milkSession.number}` : info.label, false);
+  }
+  // ---- changing slides: zoom out of the drop to the whole glass slide,
+  // the stage carries it away and brings the next one in, then zoom back into
+  // the new drop and pull focus. Clicks on the slide are blocked meanwhile.
+  const swapEl = document.getElementById('slide-swap');
+  const swapLight = swapEl.querySelector('.swap-light');
+  const swapOut = document.getElementById('swap-out'), swapIn = document.getElementById('swap-in');
+  const SLIDE_NUMBER = { water:'01', soil:'02', milk:'03' };
+  const SLIDE_SAMPLE = { water:'Água de lagoa', soil:'Solo úmido', milk:'Leite cru' };
+  let swapping = false;
+  function dressGlass(card, slide, note){
+    card.className = `glass-slide gs-${slide}`;
+    card.querySelector('b').textContent = `Lâmina ${SLIDE_NUMBER[slide]}`;
+    card.querySelector('span').textContent = SLIDE_SAMPLE[slide];
+    card.querySelector('small').textContent = note;
+  }
+  async function switchSlide(slide){
+    if(swapping) return;
+    if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches){ applySlide(slide); return; }
+    swapping = true;
+    dressGlass(swapOut, currentSlide, currentSlide === 'milk' ? `lote nº ${milkSession.number}` : 'amostra analisada');
+    dressGlass(swapIn, slide, slide === 'milk' ? 'novo lote' : 'nova gota');
+    swapEl.classList.add('on');
+    const AT = 'translate(-62%,-50%)'; // the drop (62% across the glass) sits at the screen centre
+    const ease1 = 'cubic-bezier(.5,0,.75,0)', ease2 = 'cubic-bezier(.2,.7,.3,1)', slideEase = 'cubic-bezier(.55,0,.4,1)';
+    // 1. zoom out of the drop until the whole glass slide is in view
+    const hide = slideEl.animate([{ transform:'scale(1)', filter:'blur(0px)', opacity:1 }, { transform:'scale(.3)', filter:'blur(6px)', opacity:0 }],
+                                 { duration:520, easing:ease1, fill:'forwards' });
+    swapLight.animate([{ opacity:0 }, { opacity:1 }], { duration:420, fill:'forwards' });
+    swapIn.animate([{ transform:`${AT} translateX(120vw)` }], { duration:1, fill:'forwards' });
+    swapOut.animate([{ transform:`${AT} scale(2.6)`, opacity:0 }, { transform:`${AT} scale(1)`, opacity:1 }], { duration:520, easing:ease2, fill:'forwards' });
+    await hide.finished;
+    // 2. the stage moves: this slide leaves to the left, the next comes in from the right
+    swapOut.animate([{ transform:`${AT} scale(1)`, opacity:1 }, { transform:`${AT} translateX(-120vw) rotate(-2deg)`, opacity:1 }], { duration:760, easing:slideEase, fill:'forwards' });
+    const enter = swapIn.animate([{ transform:`${AT} translateX(120vw) rotate(2deg)` }, { transform:`${AT} translateX(0) rotate(0deg)` }], { duration:760, easing:slideEase, fill:'forwards' });
+    applySlide(slide);
+    if(slide === 'milk') swapIn.querySelector('small').textContent = `lote nº ${milkSession.number}`;
+    await enter.finished;
+    // 3. zoom into the new drop and bring it into focus
+    swapIn.animate([{ transform:`${AT} scale(1)`, opacity:1 }, { transform:`${AT} scale(2.6)`, opacity:0 }], { duration:560, easing:ease1, fill:'forwards' });
+    swapLight.animate([{ opacity:1 }, { opacity:0 }], { duration:700, delay:200, fill:'forwards' });
+    hide.cancel();
+    const show = slideEl.animate([
+      { transform:'scale(.3)', filter:'blur(8px)', opacity:0 },
+      { transform:'scale(1)', filter:'blur(3px)', opacity:1, offset:0.7 },
+      { transform:'scale(1)', filter:'blur(0px)', opacity:1 }
+    ], { duration:950, easing:ease2 });
+    await show.finished;
+    swapEl.classList.remove('on');
+    [swapOut, swapIn, swapLight].forEach(n=> n.getAnimations().forEach(a=> a.cancel()));
+    swapping = false;
   }
   slideBtns.forEach(b=> b.addEventListener('click', ()=> switchSlide(b.dataset.slide)));
 
@@ -5482,6 +5660,7 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     const root = el('g', {}), ripples = el('g', {});
     anSvg.appendChild(root); anSvg.appendChild(ripples);
     analysis = { species: sp, zoom: 1, ripples, culture: new Culture(sp, root, { shape:'field', w: analysisBase(sp), h: analysisBase(sp)*0.6, cap: 0 }) };
+    analysis.fx = createRippleFX(anSvg, root, ()=>{ const c = analysis.culture; return { x: -c.w/2 - 10, y: -c.h/2 - 10, w: c.w + 20, h: c.h + 20 }; });
     fitAnalysisView();
     for(let i=0;i<analysisCount(sp);i++) analysis.culture.add(null);
     analysis.culture.paused = anPaused;
@@ -5539,9 +5718,8 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     const pt = anSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
     const p = pt.matrixTransform(anSvg.getScreenCTM().inverse());
     const w = analysis.culture.w;
-    const ring = el('circle', { cx:p.x.toFixed(1), cy:p.y.toFixed(1), r:1, fill:'none', stroke:'#7d8878', 'stroke-width':1.4, opacity:0.6, 'vector-effect':'non-scaling-stroke' });
-    analysis.ripples.appendChild(ring);
-    ring.animate([{ r: w*0.005, opacity:0.6 }, { r: w*0.08, opacity:0 }], { duration:900, easing:'cubic-bezier(.2,.6,.3,1)' }).onfinish = ()=> ring.remove();
+    waterRings(analysis.ripples, p.x, p.y, w*0.16, w/320);
+    analysis.fx.trigger(p.x, p.y, w*0.2, w*0.035, 1600);
     analysis.culture.orgs.forEach(o=>{ if(Math.hypot(o.x - p.x, o.y - p.y) < w*0.12) o.triggerFlee(p.x, p.y); });
   });
   document.getElementById('an-zoom-in').addEventListener('click', ()=>{ if(analysis){ analysis.zoom = Math.min(4, analysis.zoom*1.25); fitAnalysisView(); } });
