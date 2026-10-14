@@ -4356,8 +4356,8 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     }
   }
   function spawnRipple(x, y){
-    waterRings(rippleGroup, x, y, 160, 1);
-    waterFX.trigger(x, y, 190, 26, 1600);
+    waterRings(rippleGroup, x, y, 80, 1);
+    waterFX.trigger(x, y, 95, 18, 1300);
   }
 
   function updateStaticBlobShapes(t){
@@ -5718,8 +5718,8 @@ Organism.SPLIT_TIME = 1.6; // seconds for two daughter cells to slide apart
     const pt = anSvg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
     const p = pt.matrixTransform(anSvg.getScreenCTM().inverse());
     const w = analysis.culture.w;
-    waterRings(analysis.ripples, p.x, p.y, w*0.16, w/320);
-    analysis.fx.trigger(p.x, p.y, w*0.2, w*0.035, 1600);
+    waterRings(analysis.ripples, p.x, p.y, w*0.08, w/320);
+    analysis.fx.trigger(p.x, p.y, w*0.1, w*0.025, 1300);
     analysis.culture.orgs.forEach(o=>{ if(Math.hypot(o.x - p.x, o.y - p.y) < w*0.12) o.triggerFlee(p.x, p.y); });
   });
   document.getElementById('an-zoom-in').addEventListener('click', ()=>{ if(analysis){ analysis.zoom = Math.min(4, analysis.zoom*1.25); fitAnalysisView(); } });
