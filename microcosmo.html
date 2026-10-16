@@ -4283,7 +4283,12 @@ Organism.VANISH_TIME = 0.9; // seconds to fade out when swapped / trimmed
   droppletSvg.removeChild(grainGroup);
   for(let d=1; d<=MAX_DEPTH; d++) droppletSvg.removeChild(layerGroups[d].g);
   livingRoot.appendChild(grainGroup);
-  for(let d=1; d<=MAX_DEPTH; d++) livingRoot.appendChild(layerGroups[d].g);
+  // the focal planes share one parent, so the click ripple can bend the
+  // organisms without the static debris (thousands of elements in soil and
+  // milk, which would have to be re-rasterized on every frame of the ripple)
+  const lifeLayers = el('g', { class:'life-layers' });
+  for(let d=1; d<=MAX_DEPTH; d++) lifeLayers.appendChild(layerGroups[d].g);
+  livingRoot.appendChild(lifeLayers);
   droppletSvg.appendChild(livingRoot);
   // organisms stranded on the dry glass but still alive (tardigrade tuns)
   // live here: outside the wet-drop clip so they stay visible and clickable,
@@ -4369,7 +4374,7 @@ Organism.VANISH_TIME = 0.9; // seconds to fade out when swapped / trimmed
       }
     };
   }
-  const waterFX = createRippleFX(droppletSvg, livingRoot, ()=>({ x: camera.x - 40, y: camera.y - 40, w: VIEW_W + 80, h: VIEW_H + 80 }));
+  const waterFX = createRippleFX(droppletSvg, lifeLayers, ()=>({ x: camera.x - 40, y: camera.y - 40, w: VIEW_W + 80, h: VIEW_H + 80 }));
 
   // the visible surface rings (bright crest + dark trough, three of them,
   // staggered) on top of the refraction the filter does underneath
